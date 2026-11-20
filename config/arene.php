@@ -28,9 +28,18 @@ return [
     'affiliation' => [
         'lien_base' => env('GAMEHUB_AFFILIATE_URL'),
 
-        // Racine du site public GameHub Arena, utilisee comme repli quand aucun
-        // lien de parrainage n'est configure.
-        'site_public' => env('GAMEHUB_SITE_URL', 'https://api.gamehub-arena.com'),
+        // Le site public GameHub Arena (pas le sous-domaine api.*).
+        'site_public' => env('GAMEHUB_SITE_URL', 'https://gamehub-arena.com'),
+
+        /*
+         * Taux de commission, d'après les CGU GameHub Arena (§6).
+         *  - 5 % : parrainage global, une seule fois par filleul, sur sa
+         *          première inscription payante (code GH-XXXXXX du wallet).
+         *  - 2 % : affiliation par tournoi, via un lien de tournoi dédié.
+         * Servent uniquement aux estimations affichées dans le back-office.
+         */
+        'commission_globale' => (float) env('GAMEHUB_COMMISSION_GLOBALE', 5),
+        'commission_tournoi' => (float) env('GAMEHUB_COMMISSION_TOURNOI', 2),
 
         'utm' => [
             'source' => 'arene-des-gamers',

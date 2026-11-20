@@ -43,6 +43,8 @@ Route::prefix('admin')
 
         Route::get('/tournois', [TournoiAdminController::class, 'index'])->name('tournois.index');
         Route::post('/tournois/sync', [TournoiAdminController::class, 'sync'])->name('tournois.sync');
+        Route::get('/tournois/{tournoi}/modifier', [TournoiAdminController::class, 'edit'])->name('tournois.edit');
+        Route::put('/tournois/{tournoi}', [TournoiAdminController::class, 'update'])->name('tournois.update');
 
         Route::resource('articles', ArticleAdminController::class)->except(['show']);
 

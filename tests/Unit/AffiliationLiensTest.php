@@ -63,4 +63,16 @@ class AffiliationLiensTest extends TestCase
 
         $this->assertStringStartsWith('https://exemple.test/tournois/T-ABC?', $url);
     }
+
+    public function test_necrase_pas_les_utm_deja_presents_dans_le_lien(): void
+    {
+        $liens = new AffiliationLiens();
+
+        // Lien colle depuis la console GameHub, qui porte deja son propre utm_source.
+        $url = $liens->avecUtm('https://exemple.test/t/1?utm_source=console', 'calendrier');
+
+        $this->assertSame(1, substr_count($url, 'utm_source='));
+        $this->assertStringContainsString('utm_source=console', $url);
+        $this->assertStringContainsString('utm_medium=calendrier', $url);
+    }
 }

@@ -1,0 +1,97 @@
+<?php
+
+return [
+
+    /*
+    |--------------------------------------------------------------------------
+    | Identité du site
+    |--------------------------------------------------------------------------
+    */
+
+    'site' => [
+        'nom' => env('ARENE_NOM', 'Arène des Gamers'),
+        'baseline' => env('ARENE_BASELINE', 'Le calendrier des tournois et le matchmaking LFT de la communauté gaming africaine.'),
+        'communaute_discord' => env('ARENE_DISCORD_URL'),
+        'communaute_whatsapp' => env('ARENE_WHATSAPP_URL', 'https://chat.whatsapp.com/Ij9AdHcAGyqC1SoBOhXpTe'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Affiliation GameHub Arena
+    |--------------------------------------------------------------------------
+    |
+    | Le lien de parrainage reçu de la console développeur. Les paramètres UTM
+    | sont ajoutés à la volée pour chaque point d'entrée (calendrier, accueil).
+    |
+    */
+
+    'affiliation' => [
+        'lien_base' => env('GAMEHUB_AFFILIATE_URL'),
+
+        // Racine du site public GameHub Arena, utilisee comme repli quand aucun
+        // lien de parrainage n'est configure.
+        'site_public' => env('GAMEHUB_SITE_URL', 'https://api.gamehub-arena.com'),
+
+        'utm' => [
+            'source' => 'arene-des-gamers',
+            'medium_accueil' => 'accueil',
+            'medium_calendrier' => 'calendrier',
+            'medium_article' => 'article',
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Synchronisation des tournois
+    |--------------------------------------------------------------------------
+    |
+    | Quota du plan gratuit GameHub Arena : 1 000 requêtes par mois.
+    |
+    | Chaque exécution consomme autant de requêtes que de pages parcourues.
+    | Avec `per_page = 20` et un calendrier de moins de 20 tournois, une seule
+    | requête suffit : 24 exécutions/jour = ~720 requêtes/mois en horaire.
+    |
+    | Fréquence par défaut : toutes les heures. Ne descendre en dessous de
+    | 30 minutes que si le nombre de tournois reste faible, et surveiller
+    | l'en-tête X-RateLimit-Remaining (un avertissement est journalisé à 50).
+    |
+    */
+
+    'sync' => [
+        // Doit diviser 60 (15, 20, 30 ou 60) : la planification l'exige.
+        'intervalle_minutes' => (int) env('GAMEHUB_SYNC_MINUTES', 60),
+
+        // Plafond de pages par exécution : borne le pire cas de consommation.
+        'pages_max' => (int) env('GAMEHUB_SYNC_PAGES_MAX', 2),
+        'per_page' => 20,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Régie publicitaire (alternative à AdSense)
+    |--------------------------------------------------------------------------
+    |
+    | Le MVP n'impose pas de régie précise. Le composant Blade `partials.ad`
+    | injecte le code fourni par la régie choisie.
+    |
+    | RÈGLE PRODUIT : ne jamais placer un bloc publicitaire à côté d'un bouton
+    | "S'inscrire" ou "Rejoindre". Emplacements autorisés uniquement :
+    | sidebar et bas d'article.
+    |
+    */
+
+    'pub' => [
+        'actif' => (bool) env('ARENE_PUB_ACTIF', false),
+
+        // Script de la régie, injecté tel quel dans la page (ex. Adsterra, PropellerAds).
+        'script' => env('ARENE_PUB_SCRIPT'),
+
+        // Ou une bannière image vendue en direct.
+        'image' => env('ARENE_PUB_IMAGE'),
+        'url' => env('ARENE_PUB_URL'),
+        'alt' => env('ARENE_PUB_ALT', 'Publicité'),
+
+        'mention' => 'Publicité',
+    ],
+
+];

@@ -1,0 +1,25 @@
+# Racine du site pointe vers le dossier public/ (recommande).
+# Ce fichier ne sert que si l hebergement impose la racine comme document root :
+# il reecrit alors toutes les requetes vers public/index.php.
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Ne jamais exposer .env, vendor, storage ni les sources.
+    RewriteRule ^\.env - [F,L]
+    RewriteRule ^(app|bootstrap|config|database|resources|routes|storage|tests|vendor)/ - [F,L]
+
+    # Les assets compiles servent directement depuis public/build.
+    RewriteRule ^build/(.*)$ public/build/$1 [L]
+    RewriteRule ^uploads/(.*)$ public/uploads/$1 [L]
+    RewriteRule ^storage/(.*)$ public/storage/$1 [L]
+
+    # Tout le reste passe par le front controller Laravel.
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^ public/index.php [L]
+</IfModule>
+
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+</IfModule>

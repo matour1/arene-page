@@ -3,13 +3,18 @@
 @section('titre', 'Profils LFT')
 
 @section('contenu')
-    <h1 class="text-2xl font-extrabold tracking-tight">Profils LFT</h1>
+    <div>
+        <span class="font-mono text-[0.72rem] uppercase tracking-[0.15em] text-cy">Moderation</span>
+        <h1 class="mt-1 flex items-center gap-2 text-xl font-bold text-txt sm:text-2xl">
+            <x-icone nom="users" taille="lg" class="text-cy" />
+            Profils LFT
+        </h1>
+    </div>
 
     <div class="mt-4 flex flex-wrap gap-2">
         @foreach (['' => 'Tous', 'en_attente' => 'En attente', 'valide' => 'Validés', 'rejete' => 'Rejetés'] as $valeur => $libelle)
             <a href="{{ route('admin.lft.index', $valeur ? ['statut' => $valeur] : []) }}"
-               class="rounded-lg px-3 py-1.5 text-xs font-semibold
-                      {{ $statut === ($valeur ?: null) ? 'bg-slate-900 text-white' : 'border border-slate-300 text-slate-700 hover:bg-slate-50' }}">
+               class="btn btn-sm {{ $statut === ($valeur ?: null) ? 'btn-primary' : 'btn-secondary' }}">
                 {{ $libelle }}
             </a>
         @endforeach
@@ -17,38 +22,39 @@
 
     <div class="mt-6 space-y-3">
         @forelse ($profils as $profil)
-            <div class="rounded-2xl border border-slate-200 bg-white p-5">
+            <div class="carte !p-5">
                 <div class="flex flex-wrap items-start justify-between gap-3">
-                    <div>
+                    <div class="min-w-0">
                         <div class="flex flex-wrap items-center gap-2">
-                            <p class="text-base font-extrabold">{{ $profil->pseudo }}</p>
-                            <span class="rounded-full px-2 py-0.5 text-[10px] font-bold uppercase
-                                {{ match ($profil->statut) {
-                                    'valide' => 'bg-emerald-100 text-emerald-800',
-                                    'rejete' => 'bg-red-100 text-red-700',
-                                    default => 'bg-amber-100 text-amber-800',
-                                } }}">
-                                {{ str_replace('_', ' ', $profil->statut) }}
-                            </span>
+                            <p class="text-[0.95rem] font-bold text-txt">{{ $profil->pseudo }}</p>
+
+                            @if ($profil->statut === 'valide')
+                                <span class="badge badge-ok">Validé</span>
+                            @elseif ($profil->statut === 'rejete')
+                                <span class="badge badge-danger">Rejeté</span>
+                            @else
+                                <span class="badge badge-yellow">En attente</span>
+                            @endif
+
                             @if ($profil->disponible)
-                                <span class="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold uppercase text-slate-600">dispo</span>
+                                <span class="badge badge-neutral">Dispo</span>
                             @endif
                         </div>
 
-                        <p class="mt-1.5 text-sm text-slate-600">
+                        <p class="mt-1.5 text-sm">
                             {{ $profil->jeu }}
                             @if ($profil->role) · {{ $profil->role }} @endif
                             @if ($profil->rang) · {{ $profil->rang }} @endif
                             · {{ $profil->pays }} · {{ strtoupper($profil->langue) }}
                         </p>
 
-                        <p class="mt-1 text-xs text-slate-500">
+                        <p class="mt-1 font-mono text-[0.72rem] text-dim">
                             @if ($profil->contact_discord) Discord : {{ $profil->contact_discord }} @endif
                             @if ($profil->contact_whatsapp) · WhatsApp : {{ $profil->contact_whatsapp }} @endif
                         </p>
 
                         @if ($profil->description)
-                            <p class="mt-2 text-sm text-slate-600">{{ $profil->description }}</p>
+                            <p class="mt-2 text-sm">{{ $profil->description }}</p>
                         @endif
                     </div>
 
@@ -57,7 +63,8 @@
                             <form method="POST" action="{{ route('admin.lft.valider', $profil) }}">
                                 @csrf
                                 @method('PATCH')
-                                <button type="submit" class="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700">
+                                <button type="submit" class="btn btn-primary btn-sm">
+                                    <x-icone nom="check" taille="xs" />
                                     Valider
                                 </button>
                             </form>
@@ -67,7 +74,8 @@
                             <form method="POST" action="{{ route('admin.lft.rejeter', $profil) }}">
                                 @csrf
                                 @method('PATCH')
-                                <button type="submit" class="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50">
+                                <button type="submit" class="btn btn-secondary btn-sm">
+                                    <x-icone nom="x" taille="xs" />
                                     Rejeter
                                 </button>
                             </form>
@@ -77,16 +85,17 @@
                               onsubmit="return confirm('Supprimer définitivement ce profil ?')">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50">
-                                Supprimer
+                            <button type="submit" class="btn btn-danger btn-sm">
+                                <x-icone nom="trash" taille="xs" />
                             </button>
                         </form>
                     </div>
                 </div>
             </div>
         @empty
-            <div class="rounded-2xl border border-dashed border-slate-300 bg-white p-12 text-center text-sm text-slate-500">
-                Aucun profil pour ce filtre.
+            <div class="carte px-6 py-12 text-center">
+                <x-icone nom="users" taille="xl" class="mx-auto text-dim" />
+                <p class="mt-3 text-sm font-semibold text-txt">Aucun profil pour ce filtre.</p>
             </div>
         @endforelse
     </div>

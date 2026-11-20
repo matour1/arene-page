@@ -4,32 +4,31 @@
 @section('description', $article->chapo ?? config('arene.site.baseline'))
 
 @section('contenu')
-    <div class="mx-auto max-w-3xl px-4 py-10 sm:px-6">
-        <a href="{{ route('articles.index') }}" class="text-sm font-semibold text-slate-500 hover:text-slate-900">
-            ← Articles
+    <div class="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-12">
+        <a href="{{ route('articles.index') }}" class="inline-flex items-center gap-2 text-sm font-semibold text-mut transition hover:text-cy">
+            <x-icone nom="arrow-left" taille="sm" />
+            Guides
         </a>
 
         <article class="mt-6">
             <header>
                 @if ($article->categorie)
-                    <span class="text-[11px] font-bold uppercase tracking-widest text-arn">
-                        {{ $article->categorie }}
-                    </span>
+                    <span class="badge badge-cyan">{{ $article->categorie }}</span>
                 @endif
 
-                <h1 class="mt-2 text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl">
+                <h1 class="mt-3 text-2xl font-bold leading-tight text-txt sm:text-3xl">
                     {{ $article->titre }}
                 </h1>
 
-                <p class="mt-3 text-sm text-slate-500">
+                <p class="chiffre mt-3 text-[0.8rem] text-dim">
                     {{ $article->auteur }}
                     · <time datetime="{{ $article->publie_at?->toIso8601String() }}">
-                        {{ $article->publie_at?->locale('fr')->translatedFormat('d F Y') }}
+                        {{ $article->publie_at?->locale('fr')->translatedFormat('d M Y') }}
                     </time>
                 </p>
 
                 @if ($article->chapo)
-                    <p class="mt-5 border-l-4 border-arn pl-4 text-lg leading-relaxed text-slate-700">
+                    <p class="mt-5 border-l-2 border-cy pl-4 text-[1.05rem] leading-relaxed text-txt/80">
                         {{ $article->chapo }}
                     </p>
                 @endif
@@ -38,29 +37,29 @@
             @if ($article->image)
                 <img src="{{ $article->urlImage() }}"
                      alt=""
-                     class="mt-6 w-full rounded-2xl object-cover">
+                     class="mt-6 w-full rounded-xl border border-line object-cover">
             @endif
 
-            {{-- Le contenu est saisi par l'admin en Markdown simple, rendu côté serveur. --}}
-            <div class="prose mt-8 max-w-none text-slate-800">
+            {{-- Contenu saisi par l'admin en Markdown, rendu cote serveur. --}}
+            <div class="prose-charte mt-8">
                 {!! \Illuminate\Support\Str::markdown($article->contenu) !!}
             </div>
         </article>
 
-        {{-- Publicité uniquement en bas d'article, jamais près d'un CTA. --}}
+        {{-- Publicite uniquement en bas d'article, jamais pres d'un CTA. --}}
         <div class="mt-10">
             @include('partials.ad')
         </div>
 
         @if ($autres->isNotEmpty())
-            <section class="mt-12 border-t border-slate-200 pt-8">
-                <h2 class="text-sm font-extrabold uppercase tracking-widest text-slate-500">À lire ensuite</h2>
+            <section class="mt-12 border-t border-line pt-8">
+                <h2 class="font-mono text-[0.72rem] uppercase tracking-[0.15em] text-dim">À lire ensuite</h2>
                 <div class="mt-4 space-y-3">
                     @foreach ($autres as $autre)
                         <a href="{{ route('articles.show', $autre->slug) }}"
-                           class="block rounded-xl border border-slate-200 bg-white p-4 transition hover:border-slate-300">
-                            <p class="text-sm font-bold text-slate-900">{{ $autre->titre }}</p>
-                            <p class="mt-1 line-clamp-2 text-xs text-slate-500">{{ $autre->chapo }}</p>
+                           class="carte carte-survol block !p-4">
+                            <p class="text-sm font-bold text-txt">{{ $autre->titre }}</p>
+                            <p class="mt-1 line-clamp-2 text-xs">{{ $autre->chapo }}</p>
                         </a>
                     @endforeach
                 </div>

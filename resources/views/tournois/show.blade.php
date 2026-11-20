@@ -1,84 +1,87 @@
 @extends('layouts.app')
 
-@section('titre', $tournoi->titre)
-@section('description', 'Détails du tournoi '.$tournoi->titre.' — '.$tournoi->jeu.'.')
+@section('titre', $tournoi->titrePropre())
+@section('description', 'Détails du tournoi '.$tournoi->titrePropre().' — '.$tournoi->jeu.'.')
 
 @section('contenu')
-    <div class="mx-auto max-w-5xl px-4 py-10 sm:px-6">
-        <a href="{{ route('tournois.index') }}" class="text-sm font-semibold text-slate-500 hover:text-slate-900">
-            ← Calendrier
+    @php
+        $complet = $tournoi->placesCompletes();
+        $ouvert = $tournoi->disponible && ! $complet;
+    @endphp
+
+    <div class="mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-10">
+        <a href="{{ route('tournois.index') }}" class="inline-flex items-center gap-2 text-sm font-semibold text-mut transition hover:text-cy">
+            <x-icone nom="arrow-left" taille="sm" />
+            Calendrier
         </a>
 
-        <div class="mt-6 grid gap-6 lg:grid-cols-3">
+        <div class="mt-6 grid gap-4 lg:grid-cols-3">
             <div class="lg:col-span-2">
-                <div class="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8">
-                    <div class="mb-4 flex flex-wrap items-center gap-2">
-                        <span class="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-700">
-                            {{ $tournoi->jeu }}
-                        </span>
+                <div class="carte !p-6 sm:!p-8">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <span class="badge badge-neutral">{{ $tournoi->jeu }}</span>
                         @if ($tournoi->format)
-                            <span class="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-700">
-                                {{ str_replace('_', ' ', $tournoi->format) }}
-                            </span>
+                            <span class="badge badge-neutral">{{ str_replace('_', ' ', $tournoi->format) }}</span>
                         @endif
                         @if ($tournoi->pro)
-                            <span class="rounded-full bg-violet-100 px-2.5 py-1 text-[11px] font-semibold text-violet-700">Pro</span>
+                            <span class="badge badge-violet">Pro</span>
                         @endif
-                        <span class="rounded-full px-2.5 py-1 text-[11px] font-semibold
-                            {{ $tournoi->disponible ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600' }}">
-                            {{ $tournoi->disponible ? 'Inscriptions ouvertes' : 'Inscriptions fermées' }}
-                        </span>
+                        @if ($complet)
+                            <span class="badge badge-danger">Complet</span>
+                        @elseif ($ouvert)
+                            <span class="badge badge-ok badge-dot">Inscriptions ouvertes</span>
+                        @else
+                            <span class="badge badge-neutral">Fermé</span>
+                        @endif
                     </div>
 
-                    <h1 class="text-2xl font-extrabold leading-tight tracking-tight sm:text-3xl">
+                    <h1 class="mt-4 text-xl font-bold leading-tight text-txt sm:text-2xl">
                         {{ $tournoi->titrePropre() }}
                     </h1>
 
-                    <dl class="mt-6 grid gap-4 sm:grid-cols-2">
-                        <div class="rounded-xl bg-slate-50 p-4">
-                            <dt class="text-xs font-semibold uppercase tracking-widest text-slate-500">Début</dt>
-                            <dd class="mt-1 font-bold text-slate-900">
-                                {{ $tournoi->debut_at?->locale('fr')->translatedFormat('l d F Y · H:i') ?? 'À confirmer' }}
+                    <dl class="mt-6 grid grid-cols-2 gap-3">
+                        <div class="rounded-lg border border-line bg-elevated p-4">
+                            <dt class="font-mono text-[0.68rem] uppercase tracking-wider text-dim">Début</dt>
+                            <dd class="chiffre mt-1 text-sm font-bold text-txt">
+                                {{ $tournoi->debut_at?->locale('fr')->translatedFormat('d M Y · H:i') ?? 'À confirmer' }}
                             </dd>
                         </div>
 
-                        <div class="rounded-xl bg-slate-50 p-4">
-                            <dt class="text-xs font-semibold uppercase tracking-widest text-slate-500">Fin des inscriptions</dt>
-                            <dd class="mt-1 font-bold text-slate-900">
-                                {{ $tournoi->fin_inscription_at?->locale('fr')->translatedFormat('d F Y · H:i') ?? 'À confirmer' }}
+                        <div class="rounded-lg border border-line bg-elevated p-4">
+                            <dt class="font-mono text-[0.68rem] uppercase tracking-wider text-dim">Fin inscriptions</dt>
+                            <dd class="chiffre mt-1 text-sm font-bold text-txt">
+                                {{ $tournoi->fin_inscription_at?->locale('fr')->translatedFormat('d M Y · H:i') ?? 'À confirmer' }}
                             </dd>
                         </div>
 
-                        <div class="rounded-xl bg-slate-50 p-4">
-                            <dt class="text-xs font-semibold uppercase tracking-widest text-slate-500">Places</dt>
-                            <dd class="mt-1 font-bold text-slate-900">
+                        <div class="rounded-lg border border-line bg-elevated p-4">
+                            <dt class="font-mono text-[0.68rem] uppercase tracking-wider text-dim">Places</dt>
+                            <dd class="chiffre mt-1 text-sm font-bold text-txt">
                                 {{ $tournoi->places_inscrits }} / {{ $tournoi->places_maximum }}
-                                <span class="text-sm font-normal text-slate-500">
-                                    ({{ $tournoi->places_restantes }} restantes)
-                                </span>
+                                <span class="font-normal text-mut">({{ $tournoi->places_restantes }} restantes)</span>
                             </dd>
                         </div>
 
-                        <div class="rounded-xl bg-slate-50 p-4">
-                            <dt class="text-xs font-semibold uppercase tracking-widest text-slate-500">Frais d'inscription</dt>
-                            <dd class="mt-1 font-bold text-slate-900">
+                        <div class="rounded-lg border border-line bg-elevated p-4">
+                            <dt class="font-mono text-[0.68rem] uppercase tracking-wider text-dim">Inscription</dt>
+                            <dd class="chiffre mt-1 text-sm font-bold text-txt">
                                 {{ $tournoi->payant ? number_format($tournoi->frais_inscription, 0, ',', ' ').' '.$tournoi->devise : 'Gratuit' }}
                             </dd>
                         </div>
 
                         @if ($tournoi->cagnotte_estimee > 0)
-                            <div class="rounded-xl bg-slate-50 p-4">
-                                <dt class="text-xs font-semibold uppercase tracking-widest text-slate-500">Cagnotte estimée</dt>
-                                <dd class="mt-1 font-bold text-slate-900">
+                            <div class="rounded-lg border border-line bg-elevated p-4">
+                                <dt class="font-mono text-[0.68rem] uppercase tracking-wider text-dim">Cagnotte</dt>
+                                <dd class="titre mt-1 text-sm font-extrabold text-yel">
                                     {{ number_format($tournoi->cagnotte_estimee, 0, ',', ' ') }} {{ $tournoi->devise }}
                                 </dd>
                             </div>
                         @endif
 
                         @if ($tournoi->rang_min || $tournoi->rang_max)
-                            <div class="rounded-xl bg-slate-50 p-4">
-                                <dt class="text-xs font-semibold uppercase tracking-widest text-slate-500">Rang requis</dt>
-                                <dd class="mt-1 font-bold text-slate-900">
+                            <div class="rounded-lg border border-line bg-elevated p-4">
+                                <dt class="font-mono text-[0.68rem] uppercase tracking-wider text-dim">Rang requis</dt>
+                                <dd class="chiffre mt-1 text-sm font-bold text-txt">
                                     {{ $tournoi->rang_min ?? '—' }} → {{ $tournoi->rang_max ?? '—' }}
                                 </dd>
                             </div>
@@ -86,32 +89,35 @@
                     </dl>
 
                     @if (! $tournoi->disponible && $tournoi->raison_indisponibilite)
-                        <p class="mt-6 rounded-xl bg-amber-50 p-4 text-sm text-amber-900">
-                            {{ $tournoi->raison_indisponibilite }}
-                        </p>
+                        <div class="alerte alerte-warn mt-6">
+                            <x-icone nom="alert" taille="sm" class="mt-0.5 shrink-0" />
+                            <span>{{ $tournoi->raison_indisponibilite }}</span>
+                        </div>
                     @endif
                 </div>
             </div>
 
             <aside class="space-y-4">
-                <div class="rounded-2xl border border-slate-200 bg-white p-6">
-                    <h2 class="text-sm font-extrabold uppercase tracking-widest text-slate-500">Participer</h2>
+                <div class="carte !p-6">
+                    <p class="font-mono text-[0.7rem] uppercase tracking-[0.15em] text-dim">Participer</p>
 
                     <div class="mt-4">
-                        @if ($tournoi->disponible && ! $tournoi->placesCompletes())
+                        @if ($ouvert)
                             <x-lien-affiliation :href="$tournoi->urlInscription('calendrier')" taille="lg" class="w-full">
-                                S'inscrire sur GameHub Arena
+                                <x-icone nom="crosshair" taille="sm" />
+                                S'inscrire
                             </x-lien-affiliation>
-                            <p class="mt-3 text-xs leading-relaxed text-slate-500">
+                            <p class="mt-3 text-xs leading-relaxed text-dim">
                                 L'inscription se finalise sur GameHub Arena. Nous percevons une commission
                                 sur les inscriptions payantes, sans surcoût pour toi.
                             </p>
                         @else
-                            <p class="rounded-xl bg-slate-100 p-4 text-sm font-semibold text-slate-600">
-                                {{ $tournoi->placesCompletes() ? 'Ce tournoi est complet.' : 'Les inscriptions sont fermées.' }}
-                            </p>
-                            <a href="{{ route('tournois.index') }}" class="mt-3 block text-center text-sm font-semibold text-arn hover:text-arn/80">
-                                Voir les autres tournois →
+                            <div class="alerte alerte-err">
+                                <x-icone nom="alert" taille="sm" class="mt-0.5 shrink-0" />
+                                <span>{{ $complet ? 'Ce tournoi est complet.' : 'Les inscriptions sont fermées.' }}</span>
+                            </div>
+                            <a href="{{ route('tournois.index') }}" class="btn btn-neon btn-sm mt-3 w-full">
+                                Voir les autres tournois
                             </a>
                         @endif
                     </div>

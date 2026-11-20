@@ -5,23 +5,29 @@
 ])
 
 @php
-    $classes = [
-        'primary' => 'bg-arn text-white hover:bg-arn/90 shadow-sm',
-        'secondaire' => 'bg-white text-slate-800 border border-slate-300 hover:bg-slate-50',
-        'discret' => 'bg-slate-900 text-white hover:bg-slate-800',
-    ][$variant] ?? 'bg-arn text-white hover:bg-arn/90';
+    $variantes = [
+        'primary' => 'btn-primary',
+        'neon' => 'btn-neon',
+        'secondaire' => 'btn-secondary',
+        'danger' => 'btn-danger',
+    ];
 
     $tailles = [
-        'sm' => 'px-3 py-1.5 text-xs',
-        'md' => 'px-4 py-2 text-sm',
-        'lg' => 'px-6 py-3 text-base',
-    ][$taille] ?? 'px-4 py-2 text-sm';
+        'sm' => 'btn-sm',
+        'md' => '',
+        'lg' => 'btn-lg',
+    ];
+
+    $classeVariante = $variantes[$variant] ?? $variantes['primary'];
+    $classeTaille = $tailles[$taille] ?? '';
+
+    $classes = trim("btn {$classeVariante} {$classeTaille}");
 @endphp
 
 {{-- Lien de parrainage sortant : rel sponsored + UTM pour le tracking. --}}
 <a href="{{ $href }}"
    target="_blank"
    rel="sponsored noopener noreferrer"
-   {{ $attributes->merge(['class' => "inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition {$classes} {$tailles}"]) }}>
+   {{ $attributes->merge(['class' => $classes]) }}>
     {{ $slot }}
 </a>

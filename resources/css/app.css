@@ -6,42 +6,83 @@
 @source '../views/**/*.blade.php';
 
 /*
- * Design tokens alignes sur gamehub-arena.com : Sora pour les titres,
- * Inter pour le corps, Space Mono pour les donnees chiffrees.
+ * Charte Arene des Gamers v1.1 — "Sobre & Neon".
+ * Orbitron (titres) / Inter (corps) / JetBrains Mono (donnees).
+ *
+ * Les couleurs vivent dans @theme pour que Tailwind genere les utilitaires
+ * (bg-base, text-cy...). Le theme clair surcharge les memes variables sur
+ * :root[data-theme='light'] ; les utilitaires compilent en var(), donc ils
+ * suivent automatiquement.
  */
 @theme {
     --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
-    --font-titre: 'Sora', 'Inter', ui-sans-serif, sans-serif;
-    --font-mono: 'Space Mono', ui-monospace, monospace;
+    --font-display: 'Orbitron', 'Inter', sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 
-    --color-bg: #0b0e13;
-    --color-bg2: #0e1118;
-    --color-panel: #141a24;
-    --color-panel2: #1a2130;
-    --color-txt: #e9edf3;
-    --color-mut: #8b93a3;
-    --color-dim: #5d6675;
-    --color-acc: #d4a53a;
-    --color-acc2: #e3b84e;
-    --color-arn: #f2703a;
-    --color-cy: #5cc8d8;
-    --color-grn: #3ddc97;
-    --color-vio: #9d8cff;
-    --color-red: #ff5c5c;
+    --color-base: #0a0c10;
+    --color-surface: #12151e;
+    --color-elevated: #1a1e2b;
 
-    --animate-fade-up: fade-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
-    --animate-fade-in: fade-in 0.4s ease-out both;
-    --animate-scale-in: scale-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
-    --animate-pulse-soft: pulse-soft 3s ease-in-out infinite;
+    --color-cy: #00f0ff;
+    --color-vio: #8b5cf6;
+    --color-mag: #ff003c;
+    --color-yel: #facc15;
+
+    --color-ok: #22c55e;
+    --color-err: #ef4444;
+    --color-warn: #f59e0b;
+
+    --color-txt: #f8fafc;
+    --color-mut: #94a3b8;
+    --color-dim: #475569;
+
+    --color-line: #1e2433;
+    --color-line2: #2e364b;
+
+    --color-on-accent: #0a0c10;
+
+    --animate-fade-up: fadeUp 0.5s ease both;
+    --animate-fade-in: fade-in 0.4s ease both;
+    --animate-blink: blink 1.5s ease-in-out infinite;
+    --animate-spin-slow: spin 0.8s linear infinite;
     --animate-float: float 4s ease-in-out infinite;
-    --animate-ticker: ticker-scroll 28s linear infinite;
-    --animate-pulse-ring: pulse-ring 2s ease-out infinite;
-    --animate-spin-slow: spin 1s linear infinite;
+    --animate-shimmer: shimmer 2s infinite;
+    --animate-shimmer-bg: shimmer-bg 1.5s infinite;
 }
 
-@keyframes fade-up {
-    from { opacity: 0; transform: translateY(14px); }
-    to   { opacity: 1; transform: translateY(0); }
+/* Theme clair : memes noms, valeurs inversees. Place apres @theme pour gagner. */
+:root[data-theme='light'] {
+    --color-base: #f1f5f9;
+    --color-surface: #ffffff;
+    --color-elevated: #f8fafc;
+
+    --color-cy: #0891b2;
+    --color-vio: #7c3aed;
+    --color-mag: #e11d48;
+    --color-yel: #b45309;
+
+    --color-ok: #15803d;
+    --color-err: #dc2626;
+    --color-warn: #b45309;
+
+    --color-txt: #0a0c10;
+    --color-mut: #475569;
+    --color-dim: #94a3b8;
+
+    --color-line: #e2e8f0;
+    --color-line2: #cbd5e1;
+
+    --color-on-accent: #ffffff;
+
+    color-scheme: light;
+}
+
+:root {
+    color-scheme: dark;
+}
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(15px); }
+    to   { opacity: 1; transform: none; }
 }
 
 @keyframes fade-in {
@@ -49,14 +90,13 @@
     to   { opacity: 1; }
 }
 
-@keyframes scale-in {
-    from { opacity: 0; transform: scale(0.96); }
-    to   { opacity: 1; transform: scale(1); }
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.3; }
 }
 
-@keyframes pulse-soft {
-    0%, 100% { opacity: 1; }
-    50%      { opacity: 0.5; }
+@keyframes spin {
+    to { transform: rotate(360deg); }
 }
 
 @keyframes float {
@@ -64,79 +104,220 @@
     50%      { transform: translateY(-5px); }
 }
 
-@keyframes ticker-scroll {
-    0%   { transform: translateX(0); }
-    100% { transform: translateX(-100%); }
-}
-
-@keyframes pulse-ring {
-    0%   { opacity: 0.55; transform: scale(0.7); }
-    70%  { opacity: 0;    transform: scale(1.55); }
-    100% { opacity: 0;    transform: scale(1.55); }
-}
-
 @keyframes shimmer {
-    0%   { background-position: -200% 0; }
-    100% { background-position: 200% 0; }
+    0%   { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+@keyframes shimmer-bg {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
 }
 
 @layer base {
     html {
-        /* Empeche le debordement horizontal, source des scrollbars parasites. */
+        scroll-behavior: smooth;
+        scroll-padding-top: 84px;
         overflow-x: hidden;
     }
 
     body {
         font-family: var(--font-sans);
+        background-color: var(--color-base);
+        color: var(--color-mut);
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
         overflow-x: hidden;
+        transition: background-color 0.2s ease, color 0.2s ease;
     }
 
-    h1, h2, h3, h4, .titre {
-        font-family: var(--font-titre);
+    /* Halos d'ambiance, uniquement en sombre. */
+    body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+        background:
+            radial-gradient(800px 500px at 10% -5%, rgb(0 240 255 / 0.05), transparent 60%),
+            radial-gradient(700px 450px at 90% 5%, rgb(139 92 246 / 0.05), transparent 60%);
+    }
+
+    :root[data-theme='light'] body::before {
+        background:
+            radial-gradient(800px 500px at 10% -5%, rgb(8 145 178 / 0.06), transparent 60%),
+            radial-gradient(700px 450px at 90% 5%, rgb(124 58 237 / 0.05), transparent 60%);
+    }
+
+    h1, h2, h3, .titre {
+        font-family: var(--font-display);
+        color: var(--color-txt);
         letter-spacing: -0.02em;
     }
 
-    /* Les chiffres s'alignent en colonnes. */
     .chiffre, time, .tabular-nums {
         font-family: var(--font-mono);
         font-variant-numeric: tabular-nums;
     }
+
+    code {
+        font-family: var(--font-mono);
+        font-size: 0.85em;
+        background: var(--color-elevated);
+        padding: 2px 6px;
+        border-radius: 4px;
+        color: var(--color-yel);
+    }
+
+    ::selection {
+        background: var(--color-cy);
+        color: var(--color-on-accent);
+    }
+
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: var(--color-base); }
+    ::-webkit-scrollbar-thumb { background: var(--color-line2); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--color-cy); }
+
+    select, input[type='date'], input[type='file'], textarea {
+        color-scheme: inherit;
+    }
 }
 
 @layer components {
+    /* ---------- Boutons ---------- */
+    .btn {
+        @apply inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg border border-transparent
+               px-[22px] py-[11px] text-[0.88rem] font-semibold transition duration-200;
+    }
+    .btn:active { @apply scale-[0.97]; }
+
+    .btn-primary { @apply border-cy bg-cy text-on-accent; }
+    .btn-primary:hover { @apply opacity-90 shadow-[0_0_15px_rgba(0,240,255,0.35)]; }
+
+    .btn-neon { @apply border-cy bg-transparent text-cy; }
+    .btn-neon:hover { @apply bg-cy/10; }
+
+    .btn-secondary { @apply border-line2 bg-elevated text-txt; }
+    .btn-secondary:hover { @apply border-dim; }
+
+    .btn-danger { @apply border-err bg-transparent text-err; }
+    .btn-danger:hover { @apply bg-err/10; }
+
+    .btn-sm { @apply rounded-md px-3.5 py-[7px] text-[0.78rem]; }
+    .btn-lg { @apply px-[30px] py-3.5 text-[0.98rem]; }
+
+    /* ---------- Badges ---------- */
+    .badge {
+        @apply inline-flex items-center gap-1.5 rounded px-2.5 py-1 text-[0.72rem] font-bold uppercase tracking-wider;
+    }
+    .badge-cyan   { @apply border border-cy/40 bg-cy/10 text-cy; }
+    .badge-violet { @apply border border-vio/40 bg-vio/10 text-vio; }
+    .badge-yellow { @apply border border-yel/40 bg-yel/10 text-yel; }
+    .badge-ok     { @apply border border-ok/40 bg-ok/10 text-ok; }
+    .badge-danger { @apply border border-err/40 bg-err/10 text-err; }
+    .badge-neutral{ @apply border border-line2 bg-elevated text-mut; }
+
+    .badge-dot::before {
+        content: "";
+        @apply size-1.5 rounded-full bg-current animate-blink;
+    }
+
+    /* ---------- Champs ---------- */
     .champ {
-        @apply w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900
-               shadow-xs transition placeholder:text-slate-400
-               focus:border-arn focus:outline-none focus:ring-2 focus:ring-arn/20;
+        @apply w-full rounded-lg border border-line2 bg-base px-3.5 py-3 text-[0.92rem] text-txt
+               outline-none transition duration-150 placeholder:text-dim
+               focus:border-cy focus:shadow-[0_0_0_3px_rgba(0,240,255,0.15)];
     }
 
-    .etiquette {
-        @apply mb-1 block text-sm font-semibold text-slate-700;
-    }
+    .champ-erreur { @apply border-err; }
 
+    .etiquette { @apply mb-1 block text-[0.85rem] font-semibold text-txt; }
+    .astuce { @apply block text-[0.78rem] text-dim; }
+
+    /* ---------- Cartes ---------- */
     .carte {
-        @apply rounded-2xl border border-slate-200 bg-white transition duration-200;
+        @apply relative overflow-hidden rounded-xl border border-line bg-surface p-5 transition duration-200;
     }
 
-    .carte-survol {
-        @apply hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-lg hover:shadow-slate-200/60;
+    .carte-survol:hover {
+        @apply -translate-y-0.5 border-line2 shadow-lg;
     }
 
-    /* Squelette de chargement facon GameHub. */
+    .carte-tournoi {
+        @apply relative flex flex-col gap-4 rounded-xl border border-line bg-surface p-5 transition duration-200;
+    }
+
+    .carte-tournoi:hover {
+        @apply border-cy/60 shadow-[0_0_20px_rgba(0,240,255,0.12)];
+    }
+
+    :root[data-theme='light'] .carte-tournoi:hover,
+    :root[data-theme='light'] .carte-survol:hover {
+        @apply shadow-md;
+    }
+
+    /* ---------- Alertes ---------- */
+    .alerte {
+        @apply flex items-start gap-3 rounded-lg border px-4 py-3 text-[0.88rem] leading-relaxed;
+    }
+    .alerte-info { @apply border-cy/30  bg-cy/5   text-cy; }
+    .alerte-ok   { @apply border-ok/30  bg-ok/5   text-ok; }
+    .alerte-warn { @apply border-warn/30 bg-warn/5 text-warn; }
+    .alerte-err  { @apply border-err/30 bg-err/5  text-err; }
+
+    /* ---------- Progression ---------- */
+    .progress {
+        @apply relative h-1.5 w-full overflow-hidden rounded-sm bg-line;
+    }
+
+    .progress-fill {
+        @apply relative h-full rounded-sm bg-cy transition-[width] duration-500;
+    }
+
+    .progress-fill-anime::after {
+        content: "";
+        @apply pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer;
+    }
+
+    /* ---------- Chargeurs ---------- */
+    .loader {
+        @apply size-7 rounded-full border-2 border-line2 border-t-cy animate-spin-slow;
+    }
+
     .skeleton {
-        @apply rounded-md;
+        @apply rounded-md animate-shimmer-bg bg-elevated;
         background-image: linear-gradient(
             90deg,
-            rgb(226 232 240 / 0.6) 25%,
-            rgb(241 245 249 / 0.9) 50%,
-            rgb(226 232 240 / 0.6) 75%
+            var(--color-elevated) 25%,
+            var(--color-line) 50%,
+            var(--color-elevated) 75%
         );
         background-size: 200% 100%;
-        animation: shimmer 1.6s ease-in-out infinite;
     }
 }
 
-/* Respect de la preference systeme. */
+/* Contenu Markdown des articles. */
+.prose-charte { @apply text-[0.95rem] leading-[1.75] text-mut; }
+.prose-charte h2 { @apply mt-10 mb-3 text-xl font-bold text-txt; }
+.prose-charte h3 { @apply mt-8 mb-2 text-lg font-bold text-txt; }
+.prose-charte p { @apply mb-4; }
+.prose-charte ul { @apply mb-4 list-disc space-y-1.5 pl-5; }
+.prose-charte ol { @apply mb-4 list-decimal space-y-1.5 pl-5; }
+.prose-charte li::marker { @apply text-cy; }
+.prose-charte strong { @apply font-semibold text-txt; }
+.prose-charte a { @apply text-cy underline decoration-cy/30 underline-offset-2 hover:text-txt; }
+.prose-charte blockquote { @apply my-6 border-l-2 border-cy pl-4 italic text-txt/80; }
+
+/* Bascule de theme : une seule icone visible selon data-theme. */
+.icone-en-clair { display: none; }
+:root[data-theme='light'] .icone-en-clair { display: block; }
+:root[data-theme='light'] .icone-en-sombre { display: none; }
+:root:not([data-theme='light']) .icone-en-sombre { display: block; }
+
+/* Le logo est concu pour fond sombre : on l'inverse sur fond clair. */
+:root[data-theme='light'] .logo-site { filter: invert(1) hue-rotate(180deg); }
+
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
         animation-duration: 0.01ms !important;

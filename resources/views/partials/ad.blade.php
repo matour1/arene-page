@@ -1,8 +1,8 @@
 {{-- Emplacement publicitaire : sidebar ou bas d'article uniquement.
-     Ne jamais insérer près d'un bouton "S'inscrire" ou "Rejoindre" (règle produit du MVP). --}}
+     Ne jamais inserer pres d'un bouton "S'inscrire" ou "Rejoindre". --}}
 @if (config('arene.pub.actif'))
-    <aside class="rounded-2xl border border-slate-200 bg-white p-3" aria-label="Publicité">
-        <p class="mb-2 text-[10px] font-semibold uppercase tracking-widest text-slate-400">
+    <aside class="carte !p-3" aria-label="Publicité">
+        <p class="mb-2 font-mono text-[0.62rem] uppercase tracking-[0.15em] text-dim">
             {{ config('arene.pub.mention') }}
         </p>
 
@@ -16,7 +16,7 @@
                      loading="lazy">
             </a>
         @else
-            <div class="flex h-40 items-center justify-center rounded-lg bg-slate-100 text-xs text-slate-400">
+            <div class="grid h-40 place-items-center rounded-lg border border-dashed border-line2 text-xs text-dim">
                 Emplacement disponible
             </div>
         @endif

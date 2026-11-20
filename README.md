@@ -262,7 +262,61 @@ Les liens sortants portent `rel="sponsored noopener noreferrer"`.
 
 ---
 
-## 7. Identité visuelle et responsive
+## 7. Identité visuelle et thèmes
+
+Charte officielle **v1.1 « Sobre & Néon »**.
+
+| Rôle | Police |
+| --- | --- |
+| Titres | **Orbitron** 500–900 |
+| Corps | **Inter** 400–800 |
+| Données (prix, dates, IDs) | **JetBrains Mono** 400–600 |
+
+Palette (thème sombre, référence) :
+
+| Token | Sombre | Clair |
+| --- | --- | --- |
+| `base` (fond) | `#0a0c10` | `#f1f5f9` |
+| `surface` (cartes) | `#12151e` | `#ffffff` |
+| `elevated` | `#1a1e2b` | `#f8fafc` |
+| `cy` (accent) | `#00f0ff` | `#0891b2` |
+| `vio` | `#8b5cf6` | `#7c3aed` |
+| `yel` | `#facc15` | `#b45309` |
+| `txt` | `#f8fafc` | `#0a0c10` |
+| `mut` | `#94a3b8` | `#475569` |
+| `line` | `#1e2433` | `#e2e8f0` |
+
+### Thème clair / sombre
+
+Un bouton de bascule se trouve dans l'en-tête de toutes les pages (site, back-office,
+connexion, erreurs). Comportement :
+
+1. **Choix mémorisé** dans `localStorage` (`arene-theme`).
+2. **Sans choix**, suit `prefers-color-scheme` du système.
+3. **Aucun flash** : un script inline dans `<head>` applique l'attribut
+   `data-theme` sur `<html>` avant le premier rendu.
+4. Les tokens vivent dans `@theme` (pour que Tailwind génère les utilitaires)
+   et sont surchargés sur `:root[data-theme='light']` ([app.css](resources/css/app.css)).
+
+Pour forcer un thème par défaut : modifier le script inline du `<head>`.
+
+### Icônes et animations
+
+- Icônes : composant [icone.blade.php](resources/views/components/icone.blade.php), SVG inline
+  (style Lucide), ~48 icônes. Aucune dépendance ni CDN.
+- Animations : `fadeUp`, `blink`, `shimmer`, `shimmer-bg`, `float`, `spin`.
+  Barre de progression de navigation + squelette `.skeleton`.
+- Toutes désactivées sous `prefers-reduced-motion: reduce`.
+- **Aucun emoji** dans l'interface ; `Tournoi::titrePropre()` nettoie ceux de l'API.
+
+### Responsive
+
+- Menu mobile en accordéon (site et back-office) sous 768 px.
+- `overflow-x: hidden` en base : aucune barre de défilement horizontale.
+- Filtres en 2 colonnes sur mobile, 4 sur desktop ; boutons pleine largeur sous 640 px.
+- Le nom de marque est masqué sous 420 px (Orbitron est très large).
+
+---
 
 La charte reprend les tokens de `gamehub-arena.com` :
 

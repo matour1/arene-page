@@ -2,102 +2,105 @@
 
 @php
     $debut = $tournoi->debut_at;
-    $dateLabel = $debut ? $debut->locale('fr')->translatedFormat('D d M · H:i') : 'Date à venir';
-    $places = $tournoi->places_maximum > 0
-        ? $tournoi->places_restantes.'/'.$tournoi->places_maximum
-        : null;
+    $dateLabel = $debut ? $debut->locale('fr')->translatedFormat('D d M · H:i') : 'À venir';
     $remplissage = $tournoi->places_maximum > 0
         ? min(100, round($tournoi->places_inscrits / $tournoi->places_maximum * 100))
         : 0;
+    $complet = $tournoi->placesCompletes();
+    $ouvert = $tournoi->disponible && ! $complet;
 @endphp
 
-<article class="group flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white transition duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-lg hover:shadow-slate-200/60">
+<article class="carte-tournoi">
 
-    {{-- Bandeau superieur : jeu + statut --}}
-    <div class="flex items-center justify-between gap-2 border-b border-slate-100 bg-slate-50/70 px-4 py-2.5">
-        <span class="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-600">
-            <x-icone nom="gamepad" taille="xs" />
-            {{ $tournoi->jeu }}
-        </span>
-
-        <div class="flex items-center gap-1.5">
-            @if ($tournoi->pro)
-                <span class="rounded bg-violet-100 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-violet-700">
-                    Pro
-                </span>
-            @endif
-
-            @if ($tournoi->payant)
-                <span class="chiffre rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-800">
-                    {{ number_format($tournoi->frais_inscription, 0, ',', ' ') }} {{ $tournoi->devise }}
-                </span>
-            @else
-                <span class="rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-800">
-                    Gratuit
-                </span>
-            @endif
+    {{-- En-tete : titre + statut --}}
+    <div class="flex items-start justify-between gap-3">
+        <div class="min-w-0">
+            <h3 class="tournament-title line-clamp-2 text-[0.98rem] font-bold leading-snug text-txt sm:text-[1.05rem]">
+                <a href="{{ route('tournois.show', $tournoi) }}" class="transition hover:text-cy">
+                    {{ $tournoi->titrePropre() }}
+                </a>
+            </h3>
+            <p class="chiffre mt-1 text-[0.85rem] text-mut">{{ $dateLabel }}</p>
         </div>
+
+        @if ($complet)
+            <span class="badge badge-danger shrink-0 whitespace-nowrap">Complet</span>
+        @elseif ($ouvert)
+            <span class="badge badge-ok badge-dot shrink-0 whitespace-nowrap">Ouvert</span>
+        @else
+            <span class="badge badge-neutral shrink-0">Fermé</span>
+        @endif
     </div>
 
-    <div class="flex flex-1 flex-col p-4">
-        <h3 class="titre line-clamp-2 text-[15px] font-bold leading-snug text-slate-900">
-            <a href="{{ route('tournois.show', $tournoi) }}" class="transition-colors hover:text-arn">
-                {{ $tournoi->titrePropre() }}
-            </a>
-        </h3>
-
-        <dl class="mt-3 space-y-1.5 text-[13px] text-slate-600">
-            <div class="flex items-center gap-2">
-                <dt class="sr-only">Date</dt>
-                <x-icone nom="calendar" taille="xs" class="text-slate-400" />
-                <dd class="chiffre">{{ $dateLabel }}</dd>
-            </div>
-
-            @if ($tournoi->cagnotte_estimee > 0)
-                <div class="flex items-center gap-2">
-                    <dt class="sr-only">Cagnotte</dt>
-                    <x-icone nom="trophy" taille="xs" class="text-acc" />
-                    <dd class="chiffre font-semibold text-slate-800">
-                        {{ number_format($tournoi->cagnotte_estimee, 0, ',', ' ') }} {{ $tournoi->devise }}
-                    </dd>
-                </div>
-            @endif
-        </dl>
-
-        {{-- Jauge de remplissage --}}
-        @if ($places)
-            <div class="mt-3">
-                <div class="flex items-center justify-between text-[11px] text-slate-500">
-                    <span class="inline-flex items-center gap-1">
-                        <x-icone nom="users" taille="xs" />
-                        Places
-                    </span>
-                    <span class="chiffre font-semibold">{{ $places }}</span>
-                </div>
-                <div class="mt-1 h-1.5 overflow-hidden rounded-full bg-slate-100">
-                    <div class="h-full rounded-full transition-all duration-500
-                        {{ $remplissage >= 90 ? 'bg-red-400' : ($remplissage >= 60 ? 'bg-acc' : 'bg-emerald-400') }}"
-                         style="width: {{ max(2, $remplissage) }}%"></div>
-                </div>
-            </div>
+    {{-- Badges jeu / format --}}
+    <div class="flex flex-wrap gap-1.5">
+        <span class="badge badge-neutral">{{ $tournoi->jeu }}</span>
+        @if ($tournoi->format)
+            <span class="badge badge-neutral">{{ str_replace('_', ' ', $tournoi->format) }}</span>
         @endif
+        @if ($tournoi->pro)
+            <span class="badge badge-violet">Pro</span>
+        @endif
+    </div>
 
-        <div class="mt-auto flex items-center justify-between gap-2 border-t border-slate-100 pt-3.5 mt-4">
-            <a href="{{ route('tournois.show', $tournoi) }}"
-               class="text-xs font-semibold text-slate-500 transition hover:text-slate-900">
-                Détails
-            </a>
-
-            @if ($tournoi->disponible && ! $tournoi->placesCompletes())
-                <x-lien-affiliation :href="$tournoi->urlInscription('calendrier')" taille="sm">
-                    S'inscrire
-                    <x-icone nom="arrow-right" taille="xs" />
-                </x-lien-affiliation>
-            @else
-                <span class="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-500">
-                    {{ $tournoi->placesCompletes() ? 'Complet' : 'Fermé' }}
-                </span>
-            @endif
+    {{-- Metadonnees : grille 2 colonnes --}}
+    <dl class="grid grid-cols-2 gap-x-3 gap-y-2.5 text-[0.82rem]">
+        <div class="flex min-w-0 flex-col gap-0.5">
+            <dt class="font-mono text-[0.66rem] uppercase tracking-wider text-dim">Cagnotte</dt>
+            <dd class="titre truncate font-extrabold {{ $tournoi->cagnotte_estimee > 0 ? 'text-yel' : 'text-mut' }}">
+                {{ $tournoi->cagnotte_estimee > 0
+                    ? number_format($tournoi->cagnotte_estimee, 0, ',', ' ').' '.$tournoi->devise
+                    : '—' }}
+            </dd>
         </div>
+
+        <div class="flex min-w-0 flex-col gap-0.5">
+            <dt class="font-mono text-[0.66rem] uppercase tracking-wider text-dim">Inscription</dt>
+            <dd class="chiffre truncate font-semibold text-txt">
+                {{ $tournoi->payant ? number_format($tournoi->frais_inscription, 0, ',', ' ').' '.$tournoi->devise : 'Gratuit' }}
+            </dd>
+        </div>
+
+        <div class="flex flex-col gap-0.5">
+            <dt class="font-mono text-[0.66rem] uppercase tracking-wider text-dim">Places</dt>
+            <dd class="chiffre font-semibold text-txt">
+                {{ $tournoi->places_inscrits }} / {{ $tournoi->places_maximum }}
+            </dd>
+        </div>
+
+        <div class="flex flex-col gap-0.5">
+            <dt class="font-mono text-[0.66rem] uppercase tracking-wider text-dim">Restantes</dt>
+            <dd class="chiffre font-semibold {{ $tournoi->places_restantes <= 5 ? 'text-warn' : 'text-txt' }}">
+                {{ $tournoi->places_restantes }}
+            </dd>
+        </div>
+    </dl>
+
+    {{-- Jauge de remplissage --}}
+    <div class="progress" role="progressbar"
+         aria-valuenow="{{ $remplissage }}" aria-valuemin="0" aria-valuemax="100"
+         aria-label="Remplissage">
+        @php
+            $couleurJauge = $remplissage >= 90 ? '!bg-err' : ($remplissage >= 60 ? '!bg-yel' : '!bg-cy');
+        @endphp
+        <div class="progress-fill progress-fill-anime {{ $couleurJauge }}"
+             style="width: {{ max(2, $remplissage) }}%"></div>
+    </div>
+
+    <div class="mt-auto flex items-center gap-2">
+        <a href="{{ route('tournois.show', $tournoi) }}" class="btn btn-secondary btn-sm flex-1">
+            Détails
+        </a>
+
+        @if ($ouvert)
+            <x-lien-affiliation :href="$tournoi->urlInscription('calendrier')" taille="sm" class="flex-1">
+                <x-icone nom="crosshair" taille="xs" />
+                S'inscrire
+            </x-lien-affiliation>
+        @else
+            <span class="btn btn-secondary btn-sm flex-1 cursor-not-allowed opacity-50">
+                {{ $complet ? 'Complet' : 'Fermé' }}
+            </span>
+        @endif
     </div>
 </article>

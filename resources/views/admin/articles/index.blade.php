@@ -5,67 +5,62 @@
 @section('contenu')
     <div class="flex flex-wrap items-center justify-between gap-4">
         <div>
-            <h1 class="flex items-center gap-2 text-2xl font-extrabold tracking-tight">
-                <x-icone nom="file-text" taille="lg" class="text-arn" />
+            <span class="font-mono text-[0.72rem] uppercase tracking-[0.15em] text-cy">Contenu</span>
+            <h1 class="mt-1 flex items-center gap-2 text-xl font-bold text-txt sm:text-2xl">
+                <x-icone nom="file-text" taille="lg" class="text-cy" />
                 Articles
             </h1>
-            <p class="mt-1 text-sm text-slate-500">{{ $articles->total() }} article(s) au total.</p>
+            <p class="mt-1 text-sm">{{ $articles->total() }} article(s) au total.</p>
         </div>
 
-        <a href="{{ route('admin.articles.create') }}"
-           class="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800">
-            <x-icone nom="plus" taille="sm" />
+        <a href="{{ route('admin.articles.create') }}" class="btn btn-primary btn-sm">
+            <x-icone nom="plus" taille="xs" />
             Nouvel article
         </a>
     </div>
 
-    <div class="mt-6 overflow-hidden rounded-2xl border border-slate-200 bg-white">
-        <table class="w-full text-left text-sm">
-            <thead class="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
+    <div class="mt-6 overflow-x-auto rounded-xl border border-line bg-surface">
+        <table class="w-full min-w-[640px] text-left text-sm">
+            <thead class="border-b border-line bg-elevated font-mono text-[0.68rem] uppercase tracking-wider text-dim">
                 <tr>
                     <th class="px-5 py-3 font-semibold">Titre</th>
                     <th class="px-5 py-3 font-semibold">Catégorie</th>
                     <th class="px-5 py-3 font-semibold">Statut</th>
-                    <th class="px-5 py-3 font-semibold">Publié le</th>
+                    <th class="px-5 py-3 font-semibold">Publié</th>
                     <th class="px-5 py-3"></th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100">
+            <tbody class="divide-y divide-line">
                 @forelse ($articles as $article)
-                    <tr class="transition-colors hover:bg-slate-50/70">
+                    <tr class="transition hover:bg-elevated/50">
                         <td class="px-5 py-4">
-                            <p class="font-semibold text-slate-900">{{ $article->titre }}</p>
-                            <p class="font-mono text-[11px] text-slate-400">/{{ $article->slug }}</p>
+                            <p class="font-semibold text-txt">{{ $article->titre }}</p>
+                            <p class="font-mono text-[0.7rem] text-dim">/{{ $article->slug }}</p>
                         </td>
-                        <td class="px-5 py-4 text-slate-600">{{ $article->categorie ?? '—' }}</td>
+                        <td class="px-5 py-4">{{ $article->categorie ?? '—' }}</td>
                         <td class="px-5 py-4">
                             @if ($article->estPublie())
-                                <span class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-bold text-emerald-800">
+                                <span class="badge badge-ok">
                                     <x-icone nom="check" taille="xs" />
                                     Publié
                                 </span>
                             @else
-                                <span class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-bold text-slate-600">
-                                    <x-icone nom="edit" taille="xs" />
-                                    Brouillon
-                                </span>
+                                <span class="badge badge-neutral">Brouillon</span>
                             @endif
                         </td>
-                        <td class="px-5 py-4 text-slate-600">
+                        <td class="chiffre px-5 py-4 text-[0.8rem]">
                             {{ $article->publie_at?->locale('fr')->translatedFormat('d M Y') ?? '—' }}
                         </td>
                         <td class="px-5 py-4">
-                            <div class="flex items-center justify-end gap-3">
+                            <div class="flex items-center justify-end gap-1">
                                 @if ($article->estPublie())
                                     <a href="{{ route('articles.show', $article->slug) }}" target="_blank"
-                                       title="Voir sur le site"
-                                       class="text-slate-400 transition hover:text-slate-900">
+                                       title="Voir" class="rounded-lg p-2 text-mut transition hover:bg-cy/10 hover:text-cy">
                                         <x-icone nom="eye" taille="sm" />
                                     </a>
                                 @endif
-                                <a href="{{ route('admin.articles.edit', $article) }}"
-                                   title="Éditer"
-                                   class="text-arn transition hover:text-arn">
+                                <a href="{{ route('admin.articles.edit', $article) }}" title="Éditer"
+                                   class="rounded-lg p-2 text-mut transition hover:bg-cy/10 hover:text-cy">
                                     <x-icone nom="edit" taille="sm" />
                                 </a>
                                 <form method="POST" action="{{ route('admin.articles.destroy', $article) }}"
@@ -73,7 +68,7 @@
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" title="Supprimer"
-                                            class="text-red-500 transition hover:text-red-700">
+                                            class="rounded-lg p-2 text-mut transition hover:bg-err/10 hover:text-err">
                                         <x-icone nom="trash" taille="sm" />
                                     </button>
                                 </form>
@@ -83,10 +78,9 @@
                 @empty
                     <tr>
                         <td colspan="5" class="px-5 py-16 text-center">
-                            <x-icone nom="file-text" taille="xl" class="mx-auto text-slate-300" />
-                            <p class="mt-3 text-sm font-semibold text-slate-700">Aucun article.</p>
-                            <a href="{{ route('admin.articles.create') }}"
-                               class="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-arn hover:text-arn/80">
+                            <x-icone nom="file-text" taille="xl" class="mx-auto text-dim" />
+                            <p class="mt-3 text-sm font-semibold text-txt">Aucun article.</p>
+                            <a href="{{ route('admin.articles.create') }}" class="btn btn-neon btn-sm mt-3">
                                 <x-icone nom="plus" taille="xs" />
                                 Créer le premier article
                             </a>

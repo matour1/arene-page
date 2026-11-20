@@ -3,34 +3,37 @@
 @section('titre', 'Profil envoyé')
 
 @section('contenu')
-    <div class="mx-auto max-w-xl px-4 py-20 sm:px-6">
-        <div class="rounded-2xl border border-slate-200 bg-white p-8 text-center">
-            <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+    <div class="mx-auto max-w-xl px-4 py-16 sm:px-6 sm:py-20">
+        <div class="carte text-center !p-8">
+            <div class="mx-auto grid size-14 place-items-center rounded-full border border-ok/40 bg-ok/10 text-ok">
                 <x-icone nom="check" taille="xl" />
             </div>
 
-            <h1 class="mt-5 text-2xl font-extrabold tracking-tight">Profil envoyé</h1>
+            <h1 class="mt-5 text-xl font-bold text-txt sm:text-2xl">Profil envoyé</h1>
 
-            <p class="mt-3 text-sm leading-relaxed text-slate-600">
+            <p class="mt-3 text-sm leading-relaxed">
                 @if (session('pseudo'))
-                    Merci <strong>{{ session('pseudo') }}</strong>.
+                    Merci <strong class="text-txt">{{ session('pseudo') }}</strong>.
                 @endif
                 Ton profil sera visible dès sa validation par notre équipe (sous 24 h).
             </p>
 
-            <div class="mt-6 flex flex-wrap justify-center gap-3">
-                <a href="{{ route('lft.index') }}" class="rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-slate-800">
+            <div class="mt-6 flex flex-wrap justify-center gap-2">
+                <a href="{{ route('lft.index') }}" class="btn btn-primary btn-sm">
+                    <x-icone nom="users" taille="xs" />
                     Voir les profils
                 </a>
-                <a href="{{ route('tournois.index') }}" class="rounded-xl border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-800 hover:bg-slate-50">
+                <a href="{{ route('tournois.index') }}" class="btn btn-secondary btn-sm">
+                    <x-icone nom="trophy" taille="xs" />
                     Voir les tournois
                 </a>
             </div>
 
             @if (config('arene.site.communaute_whatsapp'))
                 <a href="{{ config('arene.site.communaute_whatsapp') }}" target="_blank" rel="noopener"
-                   class="mt-6 inline-block text-sm font-semibold text-emerald-700 hover:text-emerald-800">
-                    Rejoindre la communauté WhatsApp →
+                   class="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-ok transition hover:text-txt">
+                    <x-icone nom="whatsapp" taille="sm" />
+                    Rejoindre la communauté WhatsApp
                 </a>
             @endif
         </div>

@@ -4,10 +4,10 @@
 ])
 
 <a href="{{ $href }}"
-   class="px-3 py-2 rounded-lg text-sm font-semibold transition
+   class="rounded-lg border-l-2 px-3 py-2 text-sm font-semibold transition duration-150
           {{ $actif
-                ? 'bg-slate-900 text-white'
-                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}"
+                ? 'border-cy bg-cy/5 text-cy'
+                : 'border-transparent text-mut hover:bg-elevated hover:text-txt' }}"
    aria-current="{{ $actif ? 'page' : 'false' }}">
     {{ $slot }}
 </a>

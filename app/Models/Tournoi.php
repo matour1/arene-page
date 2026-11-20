@@ -45,6 +45,17 @@ class Tournoi extends Model
         return $query->where('visibilite', 'public')->orderBy('debut_at');
     }
 
+    /**
+     * Titre sans emoji : les annonces GameHub en contiennent, ce qui casse
+     * l'alignement typographique et l'accessibilite (lecteurs d'ecran).
+     */
+    public function titrePropre(): string
+    {
+        $nettoye = preg_replace('/[\x{1F000}-\x{1FAFF}\x{2600}-\x{27BF}\x{2B00}-\x{2BFF}\x{FE0F}\x{200D}]/u', '', $this->titre);
+
+        return trim(preg_replace('/\s+/u', ' ', (string) $nettoye));
+    }
+
     public function placesCompletes(): bool
     {
         return $this->places_maximum > 0 && $this->places_restantes === 0;

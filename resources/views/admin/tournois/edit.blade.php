@@ -9,10 +9,10 @@
     </a>
 
     <h1 class="mt-4 flex items-center gap-2 text-2xl font-extrabold tracking-tight">
-        <x-icone nom="wallet" taille="lg" class="text-orange-600" />
+        <x-icone nom="wallet" taille="lg" class="text-arn" />
         Lien d'affiliation
     </h1>
-    <p class="mt-1 text-sm text-slate-600">{{ $tournoi->titre }}</p>
+    <p class="mt-1 text-sm text-slate-600">{{ $tournoi->titrePropre() }}</p>
 
     @if ($errors->any())
         <div class="mt-5 rounded-xl border border-red-200 bg-red-50 p-4">

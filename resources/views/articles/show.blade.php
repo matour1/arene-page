@@ -12,7 +12,7 @@
         <article class="mt-6">
             <header>
                 @if ($article->categorie)
-                    <span class="text-[11px] font-bold uppercase tracking-widest text-orange-700">
+                    <span class="text-[11px] font-bold uppercase tracking-widest text-arn">
                         {{ $article->categorie }}
                     </span>
                 @endif
@@ -29,7 +29,7 @@
                 </p>
 
                 @if ($article->chapo)
-                    <p class="mt-5 border-l-4 border-orange-500 pl-4 text-lg leading-relaxed text-slate-700">
+                    <p class="mt-5 border-l-4 border-arn pl-4 text-lg leading-relaxed text-slate-700">
                         {{ $article->chapo }}
                     </p>
                 @endif

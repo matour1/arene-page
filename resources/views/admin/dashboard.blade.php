@@ -6,7 +6,7 @@
     <div class="flex flex-wrap items-end justify-between gap-4">
         <div>
             <h1 class="flex items-center gap-2 text-2xl font-extrabold tracking-tight">
-                <x-icone nom="layout" taille="lg" class="text-orange-600" />
+                <x-icone nom="layout" taille="lg" class="text-arn" />
                 Tableau de bord
             </h1>
             <p class="mt-1 text-sm text-slate-500">Vue d'ensemble du site et de la synchronisation.</p>
@@ -24,7 +24,7 @@
         <div class="carte animate-fade-up p-5">
             <div class="flex items-center justify-between">
                 <p class="text-xs font-bold uppercase tracking-widest text-slate-400">Tournois</p>
-                <x-icone nom="trophy" taille="sm" class="text-orange-500" />
+                <x-icone nom="trophy" taille="sm" class="text-arn" />
             </div>
             <p class="mt-2 text-3xl font-extrabold tabular-nums">{{ $nbTournois }}</p>
             <p class="mt-1 text-xs text-slate-500">{{ $nbTournoisAVenir }} à venir</p>

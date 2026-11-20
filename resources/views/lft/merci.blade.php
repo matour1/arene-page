@@ -5,8 +5,8 @@
 @section('contenu')
     <div class="mx-auto max-w-xl px-4 py-20 sm:px-6">
         <div class="rounded-2xl border border-slate-200 bg-white p-8 text-center">
-            <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-2xl">
-                ✓
+            <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+                <x-icone nom="check" taille="xl" />
             </div>
 
             <h1 class="mt-5 text-2xl font-extrabold tracking-tight">Profil envoyé</h1>

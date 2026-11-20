@@ -70,7 +70,7 @@
      stroke-width="1.75"
      stroke-linecap="round"
      stroke-linejoin="round"
-     class="{{ $dimension }} shrink-0 {{ $classe }}"
+     {{ $attributes->merge(['class' => "{$dimension} shrink-0 {$classe}"]) }}
      aria-hidden="true"
      focusable="false">
     {!! $icones[$nom] ?? $icones['info'] !!}

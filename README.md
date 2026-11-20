@@ -262,7 +262,40 @@ Les liens sortants portent `rel="sponsored noopener noreferrer"`.
 
 ---
 
-## 7. Identité visuelle
+## 7. Identité visuelle et responsive
+
+La charte reprend les tokens de `gamehub-arena.com` :
+
+| Élément | Valeur |
+| --- | --- |
+| Titres | **Sora** (500–800) |
+| Corps | **Inter** (400–700) |
+| Données chiffrées, dates, prix | **Space Mono** |
+| Or (accent principal) | `#d4a53a` |
+| Orange (CTA) | `#f2703a` |
+| Cyan | `#5cc8d8` |
+| Vert | `#3ddc97` |
+
+Polices chargées depuis Google Fonts (`layouts/app.blade.php` et `layouts/admin.blade.php`).
+Aucune police n'est compilée : rien à installer côté serveur.
+
+**Icônes** : composant Blade [`resources/views/components/icone.blade.php`](resources/views/components/icone.blade.php),
+SVG inline (style Lucide), ~45 icônes. Aucune dépendance externe — pas de Font Awesome, pas de CDN.
+
+**Animations** : `fade-up`, `fade-in`, `scale-in`, `pulse-soft`, `float`, `ticker`, `pulse-ring`,
+plus un squelette `.skeleton` et une barre de progression de navigation.
+Toutes sont désactivées si `prefers-reduced-motion: reduce`.
+
+**Aucun emoji dans l'interface.** Les titres de tournois venant de l'API en contiennent :
+ils sont nettoyés par `Tournoi::titrePropre()` avant affichage.
+
+**Responsive** :
+- Menu mobile en accordéon (bouton hamburger) sous 768 px, sur le site **et** le back-office.
+- `overflow-x: hidden` en base, pour éliminer les barres de défilement horizontales.
+- Filtres en 2 colonnes sur mobile, 4 sur desktop.
+- Les boutons passent en pleine largeur sous 640 px.
+
+---
 
 - Logo : [`public/img/logo.svg`](public/img/logo.svg) (fond sombre) et
   [`public/img/logo-clair.svg`](public/img/logo-clair.svg) (fond clair). Hexagone,
@@ -311,3 +344,29 @@ gestion du quota 429 et du token absent, validation du formulaire LFT, contrôle
   (`serializable_classes => false`). Ne jamais mettre un modèle ou une collection Eloquent
   en cache — uniquement des scalaires ou des tableaux.
 - **Back-office** : accessible uniquement aux comptes `is_admin = true`.
+
+## 11. Accès au back-office
+
+Le back-office **n'est pas** sur `/admin`. Il vit sous un chemin non devinable défini par
+`ARENE_ADMIN_PATH` :
+
+```dotenv
+ARENE_ADMIN_PATH=pilotage-3e46jpdcr9
+```
+
+L'URL de connexion devient donc :
+
+```
+https://votre-domaine.com/pilotage-3e46jpdcr9/connexion
+```
+
+`/admin` et `/connexion` renvoient **404** — aucun formulaire de connexion n'est exposé
+à un chemin devinable.
+
+**Changer le secret** : modifier `ARENE_ADMIN_PATH`, puis `php artisan config:cache`.
+Tous les liens internes du back-office suivent automatiquement (routes nommées).
+
+> Le seed crée `admin@arene-des-gamers.test` / `password`. **Changez ce mot de passe**
+> avant la mise en ligne.
+
+---

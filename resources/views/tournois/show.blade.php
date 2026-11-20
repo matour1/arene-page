@@ -31,7 +31,7 @@
                     </div>
 
                     <h1 class="text-2xl font-extrabold leading-tight tracking-tight sm:text-3xl">
-                        {{ $tournoi->titre }}
+                        {{ $tournoi->titrePropre() }}
                     </h1>
 
                     <dl class="mt-6 grid gap-4 sm:grid-cols-2">
@@ -110,7 +110,7 @@
                             <p class="rounded-xl bg-slate-100 p-4 text-sm font-semibold text-slate-600">
                                 {{ $tournoi->placesCompletes() ? 'Ce tournoi est complet.' : 'Les inscriptions sont fermées.' }}
                             </p>
-                            <a href="{{ route('tournois.index') }}" class="mt-3 block text-center text-sm font-semibold text-orange-700 hover:text-orange-800">
+                            <a href="{{ route('tournois.index') }}" class="mt-3 block text-center text-sm font-semibold text-arn hover:text-arn/80">
                                 Voir les autres tournois →
                             </a>
                         @endif

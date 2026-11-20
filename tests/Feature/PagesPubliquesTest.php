@@ -140,17 +140,26 @@ class PagesPubliquesTest extends TestCase
 
     public function test_le_back_office_est_interdit_aux_visiteurs_et_non_admins(): void
     {
-        $this->get('/admin')->assertRedirect(route('login'));
+        $this->get(route('admin.dashboard'))->assertRedirect(route('login'));
 
         $utilisateur = User::factory()->create(['is_admin' => false]);
-        $this->actingAs($utilisateur)->get('/admin')->assertForbidden();
+        $this->actingAs($utilisateur)->get(route('admin.dashboard'))->assertForbidden();
     }
 
     public function test_un_admin_peut_acceder_au_back_office(): void
     {
         $admin = User::factory()->create(['is_admin' => true]);
 
-        $this->actingAs($admin)->get('/admin')->assertOk()->assertSee('Tableau de bord');
+        $this->actingAs($admin)->get(route('admin.dashboard'))->assertOk()->assertSee('Tableau de bord');
+    }
+
+    public function test_le_chemin_du_back_office_suit_la_configuration(): void
+    {
+        // Le prefixe vient de arene.admin.path, pas d'une valeur codee en dur.
+        $prefixe = trim((string) config('arene.admin.path'), '/');
+
+        $this->assertSame(url("/{$prefixe}/connexion"), route('login'));
+        $this->assertSame(url("/{$prefixe}"), route('admin.dashboard'));
     }
 
     /**

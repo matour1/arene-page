@@ -31,11 +31,11 @@
 
                         <div class="flex flex-1 flex-col p-5">
                             @if ($article->categorie)
-                                <span class="text-[11px] font-bold uppercase tracking-widest text-orange-700">
+                                <span class="text-[11px] font-bold uppercase tracking-widest text-arn">
                                     {{ $article->categorie }}
                                 </span>
                             @endif
-                            <h2 class="mt-2 text-base font-bold leading-snug group-hover:text-orange-700">
+                            <h2 class="mt-2 text-base font-bold leading-snug group-hover:text-arn">
                                 {{ $article->titre }}
                             </h2>
                             <p class="mt-2 line-clamp-3 text-sm leading-relaxed text-slate-600">

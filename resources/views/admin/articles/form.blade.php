@@ -74,7 +74,7 @@
 
         <label class="flex items-center gap-2 border-t border-slate-100 pt-5">
             <input type="checkbox" name="publier" value="1" @checked(old('publier', $article->estPublie()))
-                   class="rounded border-slate-300 text-orange-600 focus:ring-orange-500">
+                   class="rounded border-slate-300 text-arn focus:ring-arn/20">
             <span class="text-sm font-semibold text-slate-700">Publier (visible sur le site)</span>
         </label>
 

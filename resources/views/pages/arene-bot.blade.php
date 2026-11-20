@@ -6,7 +6,8 @@
 @section('contenu')
     <div class="mx-auto max-w-3xl px-4 py-14 sm:px-6">
         <span class="inline-flex items-center gap-2 rounded-full bg-violet-100 px-3 py-1 text-xs font-bold uppercase tracking-widest text-violet-800">
-            🤖 Bientôt disponible
+            <x-icone nom="bot" taille="xs" />
+            Bientôt disponible
         </span>
 
         <h1 class="mt-5 text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl">

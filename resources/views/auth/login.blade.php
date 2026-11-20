@@ -39,7 +39,7 @@
 
             <label class="flex items-center gap-2">
                 <input type="checkbox" name="remember" value="1"
-                       class="rounded border-slate-300 text-orange-600 focus:ring-orange-500">
+                       class="rounded border-slate-300 text-arn focus:ring-arn/20">
                 <span class="text-sm text-slate-600">Rester connecté</span>
             </label>
 

@@ -6,7 +6,7 @@
     <div class="flex flex-wrap items-center justify-between gap-4">
         <div>
             <h1 class="flex items-center gap-2 text-2xl font-extrabold tracking-tight">
-                <x-icone nom="trophy" taille="lg" class="text-orange-600" />
+                <x-icone nom="trophy" taille="lg" class="text-arn" />
                 Tournois
             </h1>
             <p class="mt-1 text-sm text-slate-500">
@@ -52,7 +52,7 @@
                 @forelse ($tournois as $tournoi)
                     <tr class="transition-colors hover:bg-slate-50/70">
                         <td class="px-5 py-4">
-                            <p class="font-semibold text-slate-900">{{ $tournoi->titre }}</p>
+                            <p class="font-semibold text-slate-900">{{ $tournoi->titrePropre() }}</p>
                             <p class="font-mono text-[11px] text-slate-400">{{ $tournoi->id }}</p>
                         </td>
                         <td class="px-5 py-4 text-slate-600">{{ $tournoi->jeu }}</td>
@@ -77,7 +77,7 @@
                         </td>
                         <td class="px-5 py-4 text-right">
                             <a href="{{ route('admin.tournois.edit', $tournoi) }}"
-                               class="inline-flex items-center gap-1 text-xs font-semibold text-orange-700 hover:text-orange-800">
+                               class="inline-flex items-center gap-1 text-xs font-semibold text-arn hover:text-arn/80">
                                 <x-icone nom="edit" taille="xs" />
                                 Lien
                             </a>

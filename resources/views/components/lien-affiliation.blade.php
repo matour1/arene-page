@@ -6,10 +6,10 @@
 
 @php
     $classes = [
-        'primary' => 'bg-orange-600 text-white hover:bg-orange-700 shadow-sm',
+        'primary' => 'bg-arn text-white hover:bg-arn/90 shadow-sm',
         'secondaire' => 'bg-white text-slate-800 border border-slate-300 hover:bg-slate-50',
         'discret' => 'bg-slate-900 text-white hover:bg-slate-800',
-    ][$variant] ?? 'bg-orange-600 text-white hover:bg-orange-700';
+    ][$variant] ?? 'bg-arn text-white hover:bg-arn/90';
 
     $tailles = [
         'sm' => 'px-3 py-1.5 text-xs',

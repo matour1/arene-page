@@ -28,14 +28,24 @@ Route::post('/lft', [LftController::class, 'store'])->name('lft.store');
 Route::get('/arene-bot', [PageController::class, 'areneBot'])->name('arene-bot');
 Route::get('/a-propos', [PageController::class, 'aPropos'])->name('a-propos');
 
-Route::middleware('guest')->group(function () {
-    Route::get('/connexion', [LoginController::class, 'create'])->name('login');
-    Route::post('/connexion', [LoginController::class, 'store'])->name('login.store');
+/*
+ * Le back-office vit sous un chemin non devinable configure par
+ * ARENE_ADMIN_PATH. Si la valeur est vide, on retombe sur /admin.
+ */
+$cheminAdmin = trim((string) config('arene.admin.path'), '/');
+
+if ($cheminAdmin === '') {
+    $cheminAdmin = 'admin';
+}
+
+Route::middleware('guest')->group(function () use ($cheminAdmin) {
+    Route::get("/{$cheminAdmin}/connexion", [LoginController::class, 'create'])->name('login');
+    Route::post("/{$cheminAdmin}/connexion", [LoginController::class, 'store'])->name('login.store');
 });
 
 Route::post('/deconnexion', [LoginController::class, 'destroy'])->middleware('auth')->name('logout');
 
-Route::prefix('admin')
+Route::prefix($cheminAdmin)
     ->name('admin.')
     ->middleware(['auth', 'admin'])
     ->group(function () {

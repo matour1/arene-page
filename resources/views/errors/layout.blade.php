@@ -51,19 +51,19 @@
             <nav class="mt-10 border-t border-slate-200 pt-6" aria-label="Raccourcis">
                 <ul class="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm">
                     <li>
-                        <a href="{{ route('tournois.index') }}" class="inline-flex items-center gap-1.5 font-semibold text-slate-600 hover:text-orange-700">
+                        <a href="{{ route('tournois.index') }}" class="inline-flex items-center gap-1.5 font-semibold text-slate-600 hover:text-arn">
                             <x-icone nom="trophy" taille="xs" />
                             Tournois
                         </a>
                     </li>
                     <li>
-                        <a href="{{ route('articles.index') }}" class="inline-flex items-center gap-1.5 font-semibold text-slate-600 hover:text-orange-700">
+                        <a href="{{ route('articles.index') }}" class="inline-flex items-center gap-1.5 font-semibold text-slate-600 hover:text-arn">
                             <x-icone nom="file-text" taille="xs" />
                             Articles
                         </a>
                     </li>
                     <li>
-                        <a href="{{ route('lft.index') }}" class="inline-flex items-center gap-1.5 font-semibold text-slate-600 hover:text-orange-700">
+                        <a href="{{ route('lft.index') }}" class="inline-flex items-center gap-1.5 font-semibold text-slate-600 hover:text-arn">
                             <x-icone nom="users" taille="xs" />
                             LFT
                         </a>

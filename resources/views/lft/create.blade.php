@@ -112,7 +112,7 @@
 
             <div class="flex items-center justify-between gap-4 border-t border-slate-100 pt-5">
                 <p class="text-xs text-slate-500">Pas de messagerie intégrée : les joueurs te contactent directement.</p>
-                <button type="submit" class="rounded-xl bg-orange-600 px-6 py-3 text-sm font-bold text-white hover:bg-orange-700">
+                <button type="submit" class="rounded-xl bg-arn px-6 py-3 text-sm font-bold text-white hover:bg-arn/90">
                     Publier mon profil
                 </button>
             </div>

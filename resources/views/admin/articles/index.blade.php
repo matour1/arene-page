@@ -6,7 +6,7 @@
     <div class="flex flex-wrap items-center justify-between gap-4">
         <div>
             <h1 class="flex items-center gap-2 text-2xl font-extrabold tracking-tight">
-                <x-icone nom="file-text" taille="lg" class="text-orange-600" />
+                <x-icone nom="file-text" taille="lg" class="text-arn" />
                 Articles
             </h1>
             <p class="mt-1 text-sm text-slate-500">{{ $articles->total() }} article(s) au total.</p>
@@ -65,7 +65,7 @@
                                 @endif
                                 <a href="{{ route('admin.articles.edit', $article) }}"
                                    title="Éditer"
-                                   class="text-orange-600 transition hover:text-orange-700">
+                                   class="text-arn transition hover:text-arn">
                                     <x-icone nom="edit" taille="sm" />
                                 </a>
                                 <form method="POST" action="{{ route('admin.articles.destroy', $article) }}"
@@ -86,7 +86,7 @@
                             <x-icone nom="file-text" taille="xl" class="mx-auto text-slate-300" />
                             <p class="mt-3 text-sm font-semibold text-slate-700">Aucun article.</p>
                             <a href="{{ route('admin.articles.create') }}"
-                               class="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-orange-700 hover:text-orange-800">
+                               class="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-arn hover:text-arn/80">
                                 <x-icone nom="plus" taille="xs" />
                                 Créer le premier article
                             </a>

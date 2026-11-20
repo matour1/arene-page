@@ -17,6 +17,24 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Back-office
+    |--------------------------------------------------------------------------
+    |
+    | Le back-office vit sous un chemin non devinable plutot que /admin.
+    | Renseigner ARENE_ADMIN_PATH dans .env (ex. pilotage-9f2c).
+    | Laisser vide retombe sur /admin, ce qui n'est acceptable qu'en local.
+    |
+    */
+
+    'admin' => [
+        'path' => env('ARENE_ADMIN_PATH', 'admin'),
+
+        // Nombre de tentatives de connexion avant blocage temporaire.
+        'tentatives_max' => (int) env('ARENE_ADMIN_TENTATIVES', 5),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Affiliation GameHub Arena
     |--------------------------------------------------------------------------
     |

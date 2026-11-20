@@ -15,7 +15,7 @@
             </div>
 
             <a href="{{ route('lft.create') }}"
-               class="rounded-xl bg-orange-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-orange-700">
+               class="rounded-xl bg-arn px-5 py-2.5 text-sm font-semibold text-white hover:bg-arn/90">
                 Créer mon profil
             </a>
         </header>
@@ -54,7 +54,7 @@
 
             <label class="flex items-end gap-2 pb-2">
                 <input type="checkbox" name="disponible" value="1" @checked($filtres['disponible'])
-                       class="rounded border-slate-300 text-orange-600 focus:ring-orange-500">
+                       class="rounded border-slate-300 text-arn focus:ring-arn/20">
                 <span class="text-sm font-semibold text-slate-700">Disponibles</span>
             </label>
 
@@ -71,7 +71,7 @@
         @if ($profils->isEmpty())
             <div class="rounded-2xl border border-dashed border-slate-300 bg-white p-12 text-center">
                 <p class="text-base font-semibold text-slate-700">Aucun profil ne correspond à ces filtres.</p>
-                <a href="{{ route('lft.create') }}" class="mt-3 inline-block text-sm font-semibold text-orange-700 hover:text-orange-800">
+                <a href="{{ route('lft.create') }}" class="mt-3 inline-block text-sm font-semibold text-arn hover:text-arn/80">
                     Sois le premier à publier ton profil →
                 </a>
             </div>

@@ -77,9 +77,30 @@ Deux configurations possibles :
 **A. Recommandée** — pointer le domaine vers `public/`
 (dans cPanel : *Domaines → Document Root* → `.../gaming-arene/public`).
 
-**B. Si le document root est imposé à la racine**, le `.htaccess` fourni à la racine
-réécrit tout vers `public/index.php` et bloque l'accès à `.env`, `vendor`, `storage`, etc.
-Vérifier dans ce cas que `mod_rewrite` et `AllowOverride All` sont actifs.
+**B. Si le document root est imposé à la racine**, le [`.htaccess`](.htaccess) racine
+redirige tout le trafic vers `public/` :
+
+```
+/                    → public/index.php        (Laravel)
+/build/app-xxx.css   → public/build/…
+/uploads/…           → public/uploads/…
+/img/…               → public/img/…
+/robots.txt          → Laravel (généré)
+/.env, /vendor/…     → 403
+```
+
+Prérequis : `mod_rewrite` **et** `AllowOverride All` actifs. Vérification :
+
+```bash
+curl -I https://votre-domaine.com/.env
+curl -I https://votre-domaine.com/build/manifest.json
+```
+
+Attendu : `403` sur `.env`, `200` sur le manifest, `200` sur la page d'accueil.
+
+Si `.env` renvoie `200`, **le `.htaccess` n'est pas lu** : votre document root
+pointe probablement ailleurs, ou `AllowOverride` est désactivé. Dans ce cas,
+retournez en configuration A (pointeur direct sur `public/`).
 
 ### 3.3 Base Neon
 
@@ -493,5 +514,51 @@ Tous les liens internes du back-office suivent automatiquement (routes nommées)
 
 > Le seed crée `admin@arene-des-gamers.test` / `password`. **Changez ce mot de passe**
 > avant la mise en ligne.
+
+---
+
+## 13. Neon — accès agent (CLI, skills, MCP)
+
+L'environnement agent est configuré selon
+[neon.com/prompts/agent-setup.md](https://neon.com/prompts/agent-setup.md).
+
+| Élément | État |
+| --- | --- |
+| CLI Neon | `9.9.2` (`npm i -g neon@latest`) |
+| Connexion | OAuth, profil `DEFAULT` |
+| Skills | `neon`, `neon-auth`, `neon-postgres`, `neon-functions`, `neon-ai-gateway`, `neon-object-storage`, `neon-realtime` |
+| MCP | `https://mcp.neon.tech/mcp` (VS Code, user-level) |
+
+### Commandes utiles
+
+```bash
+neon projects list                    # lister les projets
+neon connection-string <projet>       # récupérer la chaîne de connexion
+neon psql <projet>                    # console SQL
+neon skills status --global           # vérifier les skills
+```
+
+> Le MCP ne se charge qu'après **redémarrage de l'agent**.
+
+### Rattacher la base à ce projet
+
+```bash
+neon projects list
+neon link --project-id <id>
+```
+
+Puis dans `.env` / `.env.production` :
+
+```dotenv
+DB_CONNECTION=pgsql
+DB_HOST=ep-xxxxxxx.eu-central-1.aws.neon.tech
+DB_DATABASE=neondb
+DB_USERNAME=...
+DB_PASSWORD=...
+DB_SSLMODE=require
+```
+
+`sslmode=require` est **obligatoire** : Neon refuse les connexions non chiffrées.
+Rappel : `pdo_pgsql` doit être activé côté hébergeur.
 
 ---

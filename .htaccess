@@ -1,56 +1,45 @@
 # =============================================================================
-# Arène des Gamers — .htaccess de la racine du domaine
+# Arène des Gamers — .htaccess racine du domaine
 # =============================================================================
+# Structure : <docroot>/.htaccess  +  <docroot>/arene-page/public/index.php
 #
-# Gère automatiquement DEUX structures, sans modification :
+# Aucune variable d'environnement mod_rewrite (peu fiable en mutualisé).
+# Assets traités par préfixes explicites, pas par test -f générique.
 #
-#   A) projet à la racine
-#      <docroot>/public/index.php
-#
-#   B) projet dans un sous-dossier (cas actuel)
-#      <docroot>/arene-page/public/index.php
-#
-# Le préfixe est détecté par RewriteCond, puis réutilisé dans les règles.
-#
-# ⚠️ Alternative recommandée : pointer le document root du domaine sur
-#    « arene-page/public ». Ce fichier devient alors inutile.
+# ⚠️ Alternative recommandée : document root du domaine sur
+#    « arene-page/public », puis supprimer ce fichier.
 # =============================================================================
 
 <IfModule mod_rewrite.c>
     RewriteEngine On
     RewriteBase /
 
-    # --- 1. Déterminer le préfixe du projet -------------------------------
-    # Si <docroot>/public/index.php existe → préfixe vide (structure A).
-    # Sinon → arene-page/ (structure B).
-    RewriteCond %{DOCUMENT_ROOT}/public/index.php -f
-    RewriteRule ^ - [E=PREFIXE:]
+    # -----------------------------------------------------------------------
+    # 1. Refuser secrets et sources
+    # -----------------------------------------------------------------------
+    RewriteRule (^|/)\.env(\..*)?$ - [F,L]
+    RewriteRule (^|/)\.git(/|$) - [F,L]
+    RewriteRule ^arene-page/(app|bootstrap|config|database|node_modules|resources|routes|storage|tests|vendor)(/|$) - [F,L]
+    RewriteRule ^arene-page/(composer\.(json|lock)|package(-lock)?\.json|artisan|phpunit\.xml|\.htaccess)$ - [F,L]
 
-    RewriteCond %{DOCUMENT_ROOT}/public/index.php !-f
-    RewriteRule ^ - [E=PREFIXE:arene-page/]
+    # -----------------------------------------------------------------------
+    # 2. Assets : préfixes explicites vers arene-page/public/
+    # -----------------------------------------------------------------------
+    RewriteRule ^build/(.*)$   arene-page/public/build/$1   [L]
+    RewriteRule ^img/(.*)$     arene-page/public/img/$1     [L]
+    RewriteRule ^uploads/(.*)$ arene-page/public/uploads/$1 [L]
+    RewriteRule ^favicon\.ico$ arene-page/public/favicon.ico [L]
 
-    # --- 2. Refuser les secrets et les sources ----------------------------
-    RewriteRule ^(.+/)?\.env(\..*)?$ - [F,L]
-    RewriteRule ^(.+/)?\.git(/|$) - [F,L]
-    RewriteRule ^(.+/)?(app|bootstrap|config|database|node_modules|resources|routes|storage|tests|vendor)(/|$) - [F,L]
-    RewriteRule ^(.+/)?(composer\.(json|lock)|package(-lock)?\.json|artisan|phpunit\.xml)$ - [F,L]
-
-    # --- 3. Assets présents dans public/ → servis directement -------------
-    RewriteCond %{DOCUMENT_ROOT}/%{ENV:PREFIXE}public%{REQUEST_URI} -f
-    RewriteRule ^(.*)$ %{ENV:PREFIXE}public/$1 [L]
-
-    # --- 4. Tout le reste → front controller Laravel ----------------------
-    RewriteRule ^ %{ENV:PREFIXE}public/index.php [L]
+    # -----------------------------------------------------------------------
+    # 3. Tout le reste -> front controller Laravel
+    # -----------------------------------------------------------------------
+    RewriteRule ^ arene-page/public/index.php [L]
 </IfModule>
 
-# -----------------------------------------------------------------------------
-# En-têtes de sécurité (silencieusement ignorés sans mod_headers)
-# -----------------------------------------------------------------------------
 <IfModule mod_headers.c>
     Header always set X-Content-Type-Options "nosniff"
     Header always set X-Frame-Options "SAMEORIGIN"
     Header always set Referrer-Policy "strict-origin-when-cross-origin"
 </IfModule>
 
-# Volontairement pas de « Options -Indexes » : cette directive est souvent
-# interdite par AllowOverride chez les mutualisés et provoque un 500.
+# Pas de « Options -Indexes » : souvent interdit par AllowOverride (=> 500).

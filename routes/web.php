@@ -10,6 +10,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LftController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\Seo\SitemapController;
+use App\Http\Controllers\Seo\SyncController;
 use App\Http\Controllers\TournoiController;
 use Illuminate\Support\Facades\Route;
 
@@ -32,6 +33,9 @@ Route::get('/a-propos', [PageController::class, 'aPropos'])->name('a-propos');
 // SEO : sitemap genere a la demande (routes exclues du back-office).
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 Route::get('/robots.txt', [SitemapController::class, 'robots'])->name('robots');
+
+// Declencheur externe (cron-job.org) quand l'hebergement n'offre pas de crontab.
+Route::get('/sync/tournois', SyncController::class)->name('sync.tournois');
 
 /*
  * Le back-office vit sous un chemin non devinable configure par

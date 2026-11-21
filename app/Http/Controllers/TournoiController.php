@@ -30,8 +30,12 @@ class TournoiController extends Controller
             ->withQueryString();
 
         // Liste de chaines : serialisable sans risque, et rarement modifiee.
+        // On n'utilise pas le scope `affiche` ici : il ajoute orderBy('debut_at'),
+        // interdit par PostgreSQL avec SELECT DISTINCT (la colonne triee doit
+        // figurer dans la liste selectionnee). On reproduit le filtre de
+        // visibilite et on trie uniquement sur la colonne projetee.
         $jeux = Cache::remember('tournois.jeux', now()->addMinutes(30), fn () => Tournoi::query()
-            ->affiche()
+            ->where('visibilite', 'public')
             ->whereNotNull('jeu')
             ->distinct()
             ->orderBy('jeu')

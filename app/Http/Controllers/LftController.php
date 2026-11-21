@@ -50,6 +50,8 @@ class LftController extends Controller
             ->paginate(15)
             ->withQueryString();
 
+        // PostgreSQL exige que la colonne de tri figure dans un SELECT DISTINCT.
+        // On projette puis trie en PHP pour rester portable.
         $jeux = ProfilLft::query()
             ->valides()
             ->distinct()

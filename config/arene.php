@@ -116,6 +116,10 @@ return [
         // Plafond de pages par exécution : borne le pire cas de consommation.
         'pages_max' => (int) env('GAMEHUB_SYNC_PAGES_MAX', 2),
         'per_page' => 20,
+
+        // Jeton de la route /sync/tournois, pour un declencheur externe
+        // (cron-job.org) quand l'hebergement n'offre pas de crontab.
+        'jeton' => env('ARENE_SYNC_TOKEN'),
     ],
 
     /*

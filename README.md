@@ -643,3 +643,59 @@ neon skills status --global           # vérifier les skills
 > Le MCP ne se charge qu'après **redémarrage de l'agent**.
 
 ---
+
+## 15. Maintenance sans SSH (terminal limité ou cPanel seul)
+
+Si le terminal du serveur est absent ou limité, une page de maintenance
+accessible par navigateur remplace les commandes Artisan.
+
+### Mise en service
+
+1. Générer une clé :
+
+```bash
+php -r "echo bin2hex(random_bytes(16)) . PHP_EOL;"
+```
+
+2. Renseigner `.env` sur le serveur :
+
+```dotenv
+ARENE_MAINTENANCE_KEY=la_cle_generee
+```
+
+3. Ouvrir :
+
+```
+https://votre-domaine.com/_maintenance.php?cle=la_cle_generee
+```
+
+### Ce qu'elle affiche
+
+- Connexion base (PostgreSQL ou SQLite selon `DB_CONNECTION`)
+- Présence des caches de configuration et de routes
+- Valeur effective de `ARENE_ADMIN_PATH` et lien direct vers la connexion
+- Liens de test `/admin/connexion` vs chemin secret
+
+### Ce qu'elle permet
+
+| Bouton | Effet |
+| --- | --- |
+| Vider les caches | `config:clear`, `route:clear`, `view:clear`, `cache:clear` |
+| Régénérer les caches | `config:cache`, `route:cache`, `view:cache` |
+| Synchroniser les tournois | `tournois:sync` |
+
+Chaque commande affiche son code de sortie et sa sortie complète.
+
+### ⚠️ Sécurité
+
+- Sans `ARENE_MAINTENANCE_KEY`, la page répond **403** (aucun accès ouvert).
+- La clé est comparée avec `hash_equals` (résistant au timing).
+- La page émet `noindex, nofollow`.
+
+**Supprimez `public/_maintenance.php` une fois le déploiement terminé :**
+
+```bash
+rm public/_maintenance.php
+```
+
+---

@@ -1,0 +1,39 @@
+# =============================================================================
+# Arène des Gamers — .htaccess pour la RACINE du domaine (LWS mutualisé)
+# =============================================================================
+# À placer à la racine du domaine, aux côtés de index.php.
+#
+# Principe : AUCUNE condition sur %{DOCUMENT_ROOT} (peu fiable chez LWS).
+# Toutes les requêtes passent par index.php, qui sert les fichiers statiques
+# de arene-page/public/ puis délègue à Laravel.
+#
+# ⚠️ Meilleure solution si disponible : pointer le document root du domaine
+#    sur « arene-page/public ». Ce fichier et index.php deviennent inutiles.
+# =============================================================================
+
+Options -Indexes
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # --- Refuser les secrets et les sources --------------------------------
+    RewriteRule (^|/)\.env(\..*)?$ - [F,L]
+    RewriteRule (^|/)\.git(/|$) - [F,L]
+    RewriteRule ^arene-page/(app|bootstrap|config|database|node_modules|resources|routes|storage|tests|vendor)(/|$) - [F,L]
+    RewriteRule ^arene-page/(composer\.(json|lock)|package(-lock)?\.json|artisan|phpunit\.xml|\.htaccess)$ - [F,L]
+
+    # --- Ne pas réécrire les fichiers réellement présents à la racine ------
+    # (index.php, probe.php, favicon éventuel)
+    RewriteCond %{REQUEST_FILENAME} -f
+    RewriteRule ^ - [L]
+
+    # --- Tout le reste vers index.php --------------------------------------
+    RewriteRule ^ index.php [L]
+</IfModule>
+
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>

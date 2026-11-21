@@ -517,48 +517,129 @@ Tous les liens internes du back-office suivent automatiquement (routes nommées)
 
 ---
 
-## 13. Neon — accès agent (CLI, skills, MCP)
+## 13. Neon — base de production
+
+### Projet
+
+| Élément | Valeur |
+| --- | --- |
+| Projet | `arene-des-gamers` (`green-cake-22214162`) |
+| Région | `aws-eu-central-1` (Francfort) — le plus proche de l'Afrique centrale |
+| PostgreSQL | 17.12 |
+| Branche | `main` |
+| Base | `neondb` |
+
+### Chaîne de connexion
+
+Deux hôtes, **à ne pas confondre** :
+
+| Usage | Hôte |
+| --- | --- |
+| Application (requêtes courtes) | `ep-snowy-darkness-bhu5b5sd-pooler.c-10.eu-central-1.aws.neon.tech` |
+| Migrations / DDL | `ep-snowy-darkness-bhu5b5sd.c-10.eu-central-1.aws.neon.tech` (sans `-pooler`) |
+
+```dotenv
+DB_CONNECTION=pgsql
+DB_HOST=ep-snowy-darkness-bhu5b5sd-pooler.c-10.eu-central-1.aws.neon.tech
+DB_PORT=5432
+DB_DATABASE=neondb
+DB_USERNAME=neondb_owner
+DB_PASSWORD=...
+DB_SSLMODE=require
+```
+
+> Le mot de passe est dans `.env.production`, **ignoré par Git**. Ne le commitez jamais.
+
+### État de la base
+
+| Table | Lignes |
+| --- | --- |
+| `users` | 1 (admin) |
+| `articles` | 4 |
+| `tournois` | 1 |
+| `profils_lft` | 0 |
+| `migrations` | 7 |
+
+Identifiants admin par défaut : `admin@arene-des-gamers.test` / `password`.
+**À changer immédiatement** après la première connexion.
+
+### ⚠️ Piège réseau : port 5432 bloqué
+
+Sur certains réseaux (FAI, proxy d'entreprise, Wi-Fi public), **le port 5432 est
+intercepté par un proxy transparent**. Symptômes :
+
+```
+TCP connecté en 0,1 s
+... puis timeout au handshake PostgreSQL
+```
+
+Le piège : `Test-NetConnection` renvoie `True` pour *n'importe quelle* adresse,
+y compris `192.0.2.1` (non routable). Le TCP aboutit localement, mais rien
+ne parvient au serveur.
+
+**Diagnostic** — envoyer un `SSLRequest` PostgreSQL brut (8 octets) :
+
+```js
+const b = Buffer.alloc(8);
+b.writeInt32BE(8, 0);
+b.writeInt32BE(80877103, 4);  // code SSLRequest
+socket.write(b);               // réponse attendue : 'S' ou 'N'
+```
+
+Aucune réponse = port bloqué.
+
+**Contournement** : le driver HTTP de Neon passe par HTTPS (443), qui n'est
+jamais bloqué.
+
+```bash
+npm install @neondatabase/serverless
+```
+
+```js
+import { neon } from '@neondatabase/serverless';
+const sql = neon(process.env.DATABASE_URL);
+const rows = await sql`select * from tournois`;
+```
+
+Ce driver sert à l'administration ponctuelle, **pas** à l'application :
+Laravel utilise `pdo_pgsql` en TCP. Sur LWS (datacenter), le port 5432 n'est
+pas filtré — le problème est propre à certains réseaux clients.
+
+### Extension PHP requise
+
+`pdo_pgsql` doit être actif. En local sous WAMP :
+
+```ini
+; C:\wamp64\bin\php\php8.4.15\php.ini
+extension=pdo_pgsql
+extension=pgsql
+```
+
+Vérification : `php -m | findstr pgsql`
+
+---
+
+## 14. Neon — accès agent (CLI, skills, MCP)
 
 L'environnement agent est configuré selon
 [neon.com/prompts/agent-setup.md](https://neon.com/prompts/agent-setup.md).
 
 | Élément | État |
 | --- | --- |
-| CLI Neon | `9.9.2` (`npm i -g neon@latest`) |
+| CLI Neon | `9.9.2` |
 | Connexion | OAuth, profil `DEFAULT` |
-| Skills | `neon`, `neon-auth`, `neon-postgres`, `neon-functions`, `neon-ai-gateway`, `neon-object-storage`, `neon-realtime` |
+| Skills | `neon`, `neon-auth`, `neon-postgres`, `neon-functions`, `neon-ai-gateway`, `neon-object-storage` |
 | MCP | `https://mcp.neon.tech/mcp` (VS Code, user-level) |
 
 ### Commandes utiles
 
 ```bash
 neon projects list                    # lister les projets
-neon connection-string <projet>       # récupérer la chaîne de connexion
-neon psql <projet>                    # console SQL
+neon connection-string --project-id <id> --no-pooled
+neon psql --project-id <id>           # console SQL
 neon skills status --global           # vérifier les skills
 ```
 
 > Le MCP ne se charge qu'après **redémarrage de l'agent**.
-
-### Rattacher la base à ce projet
-
-```bash
-neon projects list
-neon link --project-id <id>
-```
-
-Puis dans `.env` / `.env.production` :
-
-```dotenv
-DB_CONNECTION=pgsql
-DB_HOST=ep-xxxxxxx.eu-central-1.aws.neon.tech
-DB_DATABASE=neondb
-DB_USERNAME=...
-DB_PASSWORD=...
-DB_SSLMODE=require
-```
-
-`sslmode=require` est **obligatoire** : Neon refuse les connexions non chiffrées.
-Rappel : `pdo_pgsql` doit être activé côté hébergeur.
 
 ---

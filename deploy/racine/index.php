@@ -29,8 +29,17 @@ if (str_contains($uri, '..')) {
 $chemin = realpath($public.$uri);
 
 if ($chemin !== false && is_file($chemin) && str_starts_with($chemin, realpath($public))) {
-    // Ne pas exécuter les scripts par cette voie : ils sont traités plus bas.
-    if (strtolower(pathinfo($chemin, PATHINFO_EXTENSION)) !== 'php') {
+    $ext = strtolower(pathinfo($chemin, PATHINFO_EXTENSION));
+
+    // Scripts de diagnostic (préfixe _) : exécutés, pour pouvoir analyser
+    // une erreur sans accès SSH. À supprimer après résolution.
+    if ($ext === 'php' && str_starts_with(basename($chemin), '_')) {
+        chdir(dirname($chemin));
+        require $chemin;
+        exit;
+    }
+
+    if ($ext !== 'php') {
         $types = [
             'css' => 'text/css; charset=UTF-8',
             'js' => 'text/javascript; charset=UTF-8',

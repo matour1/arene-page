@@ -1,53 +1,56 @@
 # =============================================================================
-# Arène des Gamers — redirection de toute la racine vers public/
+# Arène des Gamers — .htaccess de la racine du domaine
 # =============================================================================
-# Ce fichier n'agit QUE si l'hébergeur impose la racine du projet comme
-# document root (cas fréquent en mutualisé LWS).
 #
-#   /                    -> public/index.php  (Laravel)
-#   /build/app-xxx.css   -> public/build/app-xxx.css
-#   /uploads/...         -> public/uploads/...
-#   /img/...             -> public/img/...
-#   /.env, /vendor/...   -> 403
+# Gère automatiquement DEUX structures, sans modification :
 #
-# Si le domaine pointe directement sur public/, ce fichier n'est jamais lu.
+#   A) projet à la racine
+#      <docroot>/public/index.php
+#
+#   B) projet dans un sous-dossier (cas actuel)
+#      <docroot>/arene-page/public/index.php
+#
+# Le préfixe est détecté par RewriteCond, puis réutilisé dans les règles.
+#
+# ⚠️ Alternative recommandée : pointer le document root du domaine sur
+#    « arene-page/public ». Ce fichier devient alors inutile.
 # =============================================================================
-
-Options -Indexes
 
 <IfModule mod_rewrite.c>
     RewriteEngine On
+    RewriteBase /
 
-    # --- 1. Secrets et fichiers de développement : refus net ----------------
-    RewriteRule ^\.env(\..*)?$                  - [F,L]
-    RewriteRule ^\.git(/|$)                     - [F,L]
-    RewriteRule ^composer\.(json|lock)$         - [F,L]
-    RewriteRule ^package(-lock)?\.json$         - [F,L]
-    RewriteRule ^artisan$                       - [F,L]
-    RewriteRule ^phpunit\.xml$                  - [F,L]
-    RewriteRule ^(app|bootstrap|config|database|node_modules|resources|routes|storage|tests|vendor)(/|$) - [F,L]
+    # --- 1. Déterminer le préfixe du projet -------------------------------
+    # Si <docroot>/public/index.php existe → préfixe vide (structure A).
+    # Sinon → arene-page/ (structure B).
+    RewriteCond %{DOCUMENT_ROOT}/public/index.php -f
+    RewriteRule ^ - [E=PREFIXE:]
 
-    # --- 2. Assets servis depuis public/ -----------------------------------
-    RewriteRule ^(build|uploads|img)/(.*)$      public/$1/$2 [L]
-    RewriteRule ^favicon\.ico$                  public/favicon.ico [L]
+    RewriteCond %{DOCUMENT_ROOT}/public/index.php !-f
+    RewriteRule ^ - [E=PREFIXE:arene-page/]
 
-    # --- 3. Tout le reste vers le front controller -------------------------
+    # --- 2. Refuser les secrets et les sources ----------------------------
+    RewriteRule ^(.+/)?\.env(\..*)?$ - [F,L]
+    RewriteRule ^(.+/)?\.git(/|$) - [F,L]
+    RewriteRule ^(.+/)?(app|bootstrap|config|database|node_modules|resources|routes|storage|tests|vendor)(/|$) - [F,L]
+    RewriteRule ^(.+/)?(composer\.(json|lock)|package(-lock)?\.json|artisan|phpunit\.xml)$ - [F,L]
 
-    # Un fichier ou dossier existant dans public/ est servi directement.
-    RewriteCond %{DOCUMENT_ROOT}/public%{REQUEST_URI} -f [OR]
-    RewriteCond %{DOCUMENT_ROOT}/public%{REQUEST_URI} -d
-    RewriteRule ^ - [L]
+    # --- 3. Assets présents dans public/ → servis directement -------------
+    RewriteCond %{DOCUMENT_ROOT}/%{ENV:PREFIXE}public%{REQUEST_URI} -f
+    RewriteRule ^(.*)$ %{ENV:PREFIXE}public/$1 [L]
 
-    # Sinon : Laravel traite la requête (routes, robots.txt, sitemap.xml…).
-    RewriteRule ^ public/index.php [L]
+    # --- 4. Tout le reste → front controller Laravel ----------------------
+    RewriteRule ^ %{ENV:PREFIXE}public/index.php [L]
 </IfModule>
 
+# -----------------------------------------------------------------------------
+# En-têtes de sécurité (silencieusement ignorés sans mod_headers)
+# -----------------------------------------------------------------------------
 <IfModule mod_headers.c>
     Header always set X-Content-Type-Options "nosniff"
     Header always set X-Frame-Options "SAMEORIGIN"
     Header always set Referrer-Policy "strict-origin-when-cross-origin"
-    Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
-
-    # À décommenter une fois le HTTPS confirmé sur tout le domaine.
-    # Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
 </IfModule>
+
+# Volontairement pas de « Options -Indexes » : cette directive est souvent
+# interdite par AllowOverride chez les mutualisés et provoque un 500.

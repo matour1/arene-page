@@ -17,6 +17,31 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | SEO
+    |--------------------------------------------------------------------------
+    |
+    | Valeurs de repli quand une page ne fournit pas ses propres metadonnees.
+    | `image_defaut` sert aux partages sociaux (1200x630, format Open Graph).
+    |
+    */
+
+    'seo' => [
+        'titre_suffixe' => env('ARENE_SEO_SUFFIXE', 'Tournois e-sport, LFT et guides gaming'),
+        'description' => env('ARENE_SEO_DESCRIPTION', "Calendrier des tournois e-sport mobiles d'Afrique centrale et de l'Ouest, matchmaking LFT et guides pour progresser. Synchronisé avec GameHub Arena."),
+
+        'image_defaut' => env('ARENE_SEO_IMAGE', '/img/og-default.png'),
+        'twitter' => env('ARENE_SEO_TWITTER'),
+
+        // Codes de verification des outils de webmaster.
+        'google_verification' => env('ARENE_SEO_GOOGLE'),
+        'bing_verification' => env('ARENE_SEO_BING'),
+
+        'langue' => 'fr_FR',
+        'locale' => 'fr',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Back-office
     |--------------------------------------------------------------------------
     |

@@ -3,11 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\ProfilLft;
+use App\Services\Seo\Metadonnees;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class LftController extends Controller
 {
+    public function __construct(private Metadonnees $seo) {}
+
     /** Liste des pays proposés dans les filtres. */
     public const PAYS = [
         'CM' => 'Cameroun',
@@ -53,6 +56,16 @@ class LftController extends Controller
             ->orderBy('jeu')
             ->pluck('jeu');
 
+        $this->seo
+            ->titre('Matchmaking LFT — trouver une équipe')
+            ->description('Profils de joueurs en recherche d\'équipe : jeu, rôle, rang, pays et langue. Contact direct par Discord ou WhatsApp, sans messagerie interne.')
+            ->canonical(route('lft.index'));
+
+        // Resultats filtres : non indexes pour eviter le contenu duplique.
+        if ($request->hasAny(['page', 'jeu', 'pays', 'langue', 'disponible'])) {
+            $this->seo->noindex();
+        }
+
         return view('lft.index', [
             'profils' => $profils,
             'jeux' => $jeux,
@@ -64,6 +77,11 @@ class LftController extends Controller
 
     public function create(): View
     {
+        $this->seo
+            ->titre('Créer mon profil LFT')
+            ->description('Publie ton profil de joueur en recherche d\'équipe : jeu, rôle, rang, pays et langue. Visible après validation, sous 24 h.')
+            ->canonical(route('lft.create'));
+
         return view('lft.create', [
             'pays' => self::PAYS,
             'langues' => self::LANGUES,
@@ -100,6 +118,11 @@ class LftController extends Controller
 
     public function merci(): View
     {
+        // Page de confirmation : aucune valeur pour les moteurs.
+        $this->seo
+            ->titre('Profil envoyé')
+            ->noindex();
+
         return view('lft.merci');
     }
 }

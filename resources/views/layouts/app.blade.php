@@ -16,15 +16,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>@yield('titre', config('arene.site.nom')) — {{ config('arene.site.nom') }}</title>
-    <meta name="description" content="@yield('description', config('arene.site.baseline'))">
+    @include('partials.seo')
     <meta name="theme-color" content="#0a0c10">
-
-    <meta property="og:type" content="website">
-    <meta property="og:title" content="@yield('titre', config('arene.site.nom')) — {{ config('arene.site.nom') }}">
-    <meta property="og:description" content="@yield('description', config('arene.site.baseline'))">
-    <meta property="og:url" content="{{ url()->current() }}">
-    <meta property="og:locale" content="fr">
 
     <link rel="icon" type="image/svg+xml" href="{{ asset('img/logo.svg') }}">
 

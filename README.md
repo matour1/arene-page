@@ -364,7 +364,78 @@ ils sont nettoyés par `Tournoi::titrePropre()` avant affichage.
   [`resources/views/errors/`](resources/views/errors), avec la charte du site.
 
 ---
-## 8. Structure utile
+## 8. SEO
+
+### Métadonnées par page
+
+Chaque contrôleur injecte un objet [`Metadonnees`](app/Services/Seo/Metadonnees.php)
+(instance unique par requête), consommé par [`partials/seo.blade.php`](resources/views/partials/seo.blade.php) :
+
+```php
+$this->seo
+    ->titre('Calendrier des tournois e-sport')
+    ->description('Tous les tournois e-sport mobiles à venir…')
+    ->canonical(route('tournois.index'))
+    ->noindex();          // si page à exclure
+```
+
+Le partial génère : `<title>`, `meta description` (tronquée à 158 caractères),
+`meta robots`, `link canonical`, `hreflang`, Open Graph complet, Twitter Card,
+balises de vérification Search Console / Bing, et les blocs JSON-LD.
+
+### Données structurées
+
+| Page | Schémas |
+| --- | --- |
+| Toutes | `Organization`, `WebSite` (avec `SearchAction`) |
+| `/tournois` | `ItemList` des tournois à venir |
+| `/tournois/{id}` | `Event` + `Offer` (prix, devise, `InStock`/`SoldOut`) |
+| `/articles/{slug}` | `BlogPosting` |
+
+Les pages en `noindex` ne reçoivent **aucun** JSON-LD (évite les avertissements
+Search Console sur des données incohérentes).
+
+### Pages non indexées
+
+- Résultats de filtres et pagination (`?jeu=`, `?page=`, `?pays=`…) → contenu dupliqué
+- `/lft/merci` (confirmation de formulaire)
+- Tournois passés ou complets (plus d'action possible pour l'internaute)
+
+### Sitemap et robots
+
+| URL | Contenu |
+| --- | --- |
+| `/sitemap.xml` | Généré à la demande, cache 1 h. Exclut brouillons, tournois passés/complets, back-office |
+| `/robots.txt` | Généré avec l'`APP_URL` réelle — pas de domaine codé en dur |
+
+Les deux utilisent les routes nommées, donc ils restent corrects si vous changez
+le chemin du back-office (`ARENE_ADMIN_PATH`).
+
+### Image de partage
+
+[`public/img/og-default.png`](public/img/og-default.png) — 1200×630, générée selon la charte.
+Les articles utilisent leur propre image quand elle existe.
+
+### Variables
+
+```dotenv
+ARENE_SEO_SUFFIXE="Tournois e-sport, LFT et guides gaming"
+ARENE_SEO_DESCRIPTION="Calendrier des tournois e-sport mobiles…"
+ARENE_SEO_GOOGLE=        # code de vérification Search Console
+ARENE_SEO_BING=          # code de vérification Bing
+ARENE_SEO_TWITTER=       # @compte (Twitter Card)
+```
+
+### Après la mise en ligne
+
+1. **Search Console** → ajouter la propriété → récupérer le code de vérification
+   → `ARENE_SEO_GOOGLE=...` → `php artisan config:cache`
+2. Soumettre `https://votre-domaine.com/sitemap.xml`
+3. Vérifier une page tournoi dans le **Rich Results Test** de Google
+4. Tester le partage sur WhatsApp/Facebook (OG image)
+
+---
+## 9. Structure utile
 
 | Chemin | Rôle |
 | --- | --- |
@@ -377,7 +448,7 @@ ils sont nettoyés par `Tournoi::titrePropre()` avant affichage.
 
 ---
 
-## 9. Tests
+## 10. Tests
 
 ```bash
 php artisan test
@@ -389,7 +460,7 @@ gestion du quota 429 et du token absent, validation du formulaire LFT, contrôle
 
 ---
 
-## 10. Points de vigilance
+## 11. Points de vigilance
 
 - **`pdo_pgsql`** : sans cette extension, Neon est inaccessible. À vérifier avant la mise en ligne.
 - **Fuseau horaire** : `APP_TIMEZONE=Africa/Douala`. Les dates API (`+01:00`) sont converties
@@ -399,7 +470,7 @@ gestion du quota 429 et du token absent, validation du formulaire LFT, contrôle
   en cache — uniquement des scalaires ou des tableaux.
 - **Back-office** : accessible uniquement aux comptes `is_admin = true`.
 
-## 11. Accès au back-office
+## 12. Accès au back-office
 
 Le back-office **n'est pas** sur `/admin`. Il vit sous un chemin non devinable défini par
 `ARENE_ADMIN_PATH` :

@@ -98,6 +98,31 @@ $cheminAdmin = $cheminAdmin === '' ? 'admin' : $cheminAdmin;
 $cacheConfig = is_file($racine.'/bootstrap/cache/config.php');
 $cacheRoutes = is_file($racine.'/bootstrap/cache/routes-v7.php');
 
+// ---------------------------------------------------------------------------
+// Diagnostic du serveur
+// ---------------------------------------------------------------------------
+$phpVersion = PHP_VERSION;
+$pgsqlCharge = extension_loaded('pdo_pgsql');
+$htaccessPublic = is_file($racine.'/public/.htaccess');
+$htaccessRacine = is_file($racine.'/../.htaccess');
+$indexPublic = is_file($racine.'/public/index.php');
+
+$storageEcriture = is_writable($racine.'/storage') && is_writable($racine.'/bootstrap/cache');
+
+// Dernières lignes du log Laravel
+$logPath = $racine.'/storage/logs/laravel.log';
+$logLignes = [];
+if (is_file($logPath)) {
+    $contenu = @file($logPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    if ($contenu !== false) {
+        // Garder les lignes utiles : les traces de stack sont trop verbeuses.
+        $filtrees = array_values(array_filter($contenu, function ($l) {
+            return preg_match('/^\d{4}-\d{2}-\d{2}|ERROR|SQLSTATE|Exception|Undefined|Class .* not found|No application/i', $l);
+        }));
+        $logLignes = array_slice($filtrees, -25);
+    }
+}
+
 // Routes réellement servies : on lit le cache s'il existe, sinon on ne peut
 // pas lister sans Laravel — on indique alors la valeur attendue.
 $urlAdmin = rtrim((string) ($env['APP_URL'] ?? ''), '/').'/'.$cheminAdmin.'/connexion';
@@ -206,6 +231,51 @@ header('Content-Type: text/html; charset=utf-8');
             Cache de routes :
             <?= $cacheRoutes ? '<span class="ok">actif</span>' : '<span class="mut">absent</span>' ?>
         </p>
+    </div>
+
+    <h2>Diagnostic serveur</h2>
+    <div class="card">
+        <p>PHP : <span class="val"><?= htmlspecialchars($phpVersion) ?></span>
+            <?php if (version_compare($phpVersion, '8.3.0', '>=')): ?>
+                <span class="ok">[OK]</span>
+            <?php else: ?>
+                <span class="ko">[trop ancien, 8.3+ requis]</span>
+            <?php endif; ?>
+        </p>
+        <p>Extension <code>pdo_pgsql</code> :
+            <?php if ($pgsqlCharge): ?>
+                <span class="ok">chargée</span>
+            <?php else: ?>
+                <span class="ko">ABSENTE — Neon inaccessible</span>
+            <?php endif; ?>
+        </p>
+        <p>Écriture <code>storage/</code> + <code>bootstrap/cache/</code> :
+            <?php if ($storageEcriture): ?>
+                <span class="ok">OK</span>
+            <?php else: ?>
+                <span class="ko">REFUSÉE</span>
+            <?php endif; ?>
+        </p>
+        <p><code>public/index.php</code> :
+            <?= $indexPublic ? '<span class="ok">présent</span>' : '<span class="ko">ABSENT</span>' ?>
+        </p>
+        <p><code>public/.htaccess</code> :
+            <?= $htaccessPublic ? '<span class="ok">présent</span>' : '<span class="ko">ABSENT</span>' ?>
+        </p>
+        <p><code>.htaccess</code> racine du projet :
+            <?= $htaccessRacine ? '<span class="ok">présent</span>' : '<span class="mut">absent</span>' ?>
+        </p>
+    </div>
+
+    <h2>Dernières erreurs Laravel</h2>
+    <div class="card">
+        <?php if ($logLignes === []): ?>
+            <p class="mut">
+                <?= is_file($logPath) ? 'Log vide ou sans erreur.' : 'Aucun fichier laravel.log.' ?>
+            </p>
+        <?php else: ?>
+            <pre><?= htmlspecialchars(implode("\n", $logLignes)) ?></pre>
+        <?php endif; ?>
     </div>
 
     <h2>Accès au back-office</h2>

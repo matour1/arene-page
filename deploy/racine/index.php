@@ -9,7 +9,8 @@
  * Rôle : servir les fichiers de arene-page/public/ s'ils existent, puis
  * déléguer à Laravel. Aucune directive mod_rewrite n'est nécessaire.
  *
- * Supprimez ce commentaire d'installation une fois en place.
+ * Le chdir() vers public/ est indispensable : Vite et les chemins de Laravel
+ * sont résolus relativement au document root.
  */
 
 declare(strict_types=1);
@@ -31,14 +32,8 @@ $chemin = realpath($public.$uri);
 if ($chemin !== false && is_file($chemin) && str_starts_with($chemin, realpath($public))) {
     $ext = strtolower(pathinfo($chemin, PATHINFO_EXTENSION));
 
-    // Scripts de diagnostic (préfixe _) : exécutés, pour pouvoir analyser
-    // une erreur sans accès SSH. À supprimer après résolution.
-    if ($ext === 'php' && str_starts_with(basename($chemin), '_')) {
-        chdir(dirname($chemin));
-        require $chemin;
-        exit;
-    }
-
+    // Aucun script PHP de public/ n'est exécuté directement : tout passe par
+    // Laravel, sinon un fichier oublié deviendrait une porte d'entrée.
     if ($ext !== 'php') {
         $types = [
             'css' => 'text/css; charset=UTF-8',

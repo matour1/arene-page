@@ -1,4 +1,4 @@
-# Arène des Gamers — MVP
+﻿# Arène des Gamers — MVP
 
 Calendrier des tournois GameHub Arena, liens de parrainage trackés, articles, matchmaking LFT,
 et emplacement publicitaire configurable (alternative à AdSense).
@@ -72,24 +72,39 @@ Sans ce commit, les styles ne changent pas en production.
 
 ### 3.2 Document root
 
-Deux configurations possibles :
+Deux configurations possibles. **A est de loin la plus fiable.**
 
 **A. Recommandée** — pointer le domaine vers `public/`
 (dans cPanel : *Domaines → Document Root* → `.../gaming-arene/public`).
+Aucun fichier à copier, aucun `.htaccess` à maintenir.
 
-**B. Si le document root est imposé à la racine**, le [`.htaccess`](.htaccess) racine
-redirige tout le trafic vers `public/` :
+**B. Si le document root est imposé à la racine** (cas de LWS `webdb3202`),
+`mod_rewrite` ne suffit pas : `%{DOCUMENT_ROOT}` ne pointe pas vers le dossier
+qui contient le projet, donc les `RewriteCond` ne matchent jamais. La solution
+qui fonctionne est un **contrôleur frontal PHP** à la racine du domaine :
 
 ```
-/                    → public/index.php        (Laravel)
-/build/app-xxx.css   → public/build/…
-/uploads/…           → public/uploads/…
-/img/…               → public/img/…
-/robots.txt          → Laravel (généré)
-/.env, /vendor/…     → 403
+domaine/
+├── index.php            ← copie de deploy/racine/index.php
+├── .htaccess            ← copie de deploy/racine/.htaccess
+└── arene-page/          ← le dépôt Git
 ```
 
-Prérequis : `mod_rewrite` **et** `AllowOverride All` actifs. Vérification :
+[`deploy/racine/index.php`](deploy/racine/index.php) sert lui-même les fichiers
+statiques de `arene-page/public` (bons `Content-Type`, `Cache-Control: immutable`),
+puis fait `chdir()` + `require` sur l'`index.php` de Laravel. Le `chdir` est
+indispensable pour que Vite trouve son `manifest.json`.
+
+```bash
+cd ~/htdocs/mon-domaine.com
+cp arene-page/deploy/racine/index.php index.php
+cp arene-page/deploy/racine/.htaccess .htaccess
+```
+
+> ⚠️ **Après chaque `git pull` qui touche `deploy/racine/`**, recopier `index.php`.
+> C'est la cause n°1 des 500 « alors que ça marchait avant ».
+
+Vérification :
 
 ```bash
 curl -I https://votre-domaine.com/.env
@@ -97,10 +112,6 @@ curl -I https://votre-domaine.com/build/manifest.json
 ```
 
 Attendu : `403` sur `.env`, `200` sur le manifest, `200` sur la page d'accueil.
-
-Si `.env` renvoie `200`, **le `.htaccess` n'est pas lu** : votre document root
-pointe probablement ailleurs, ou `AllowOverride` est désactivé. Dans ce cas,
-retournez en configuration A (pointeur direct sur `public/`).
 
 ### 3.3 Base Neon
 
@@ -142,15 +153,60 @@ Les images sont écrites **directement dans `public/uploads`** (disque `uploads`
 aucun `php artisan storage:link` n'est nécessaire, ce qui évite une limitation
 fréquente des hébergements mutualisés.
 
-### 3.5 Cache de configuration
+### 3.6 Déclencheur HTTP (serveur sans crontab)
+
+Beaucoup d'offres mutualisées (dont LWS) n'exposent pas de crontab.
+La route **`GET /sync/tournois?token=…`** remplace le scheduler.
+
+```dotenv
+ARENE_SYNC_TOKEN=un_jeton_long_et_aleatoire
+```
+
+Générer le jeton :
 
 ```bash
+php -r "echo bin2hex(random_bytes(16)) . PHP_EOL;"
+```
+
+Puis chez [cron-job.org](https://cron-job.org) (gratuit) :
+
+| Champ | Valeur |
+| --- | --- |
+| URL | `https://votre-domaine.com/sync/tournois?token=VOTRE_JETON` |
+| Méthode | `GET` |
+| Fréquence | toutes les heures (aligné sur `GAMEHUB_SYNC_MINUTES`) |
+
+Réponses possibles :
+
+| Code | Corps | Signification |
+| --- | --- | --- |
+| `200` | `{"statut":"ok",…}` | Synchronisation effectuée |
+| `200` | `{"statut":"ignore",…}` | Verrou actif (< 2 min), rien à faire |
+| `403` | — | Jeton absent ou invalide |
+| `503` | — | `ARENE_SYNC_TOKEN` non configuré sur le serveur |
+
+Le jeton est comparé avec `hash_equals`, et un verrou de cache de 2 minutes
+empêche un double appel de consommer le quota GameHub.
+
+Vérification manuelle :
+
+```bash
+curl "https://votre-domaine.com/sync/tournois?token=VOTRE_JETON"
+```
+
+### 3.7 Cache de configuration
+
+```bash
+php artisan optimize:clear        # tout vider d'un coup
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 ```
 
-> Après **chaque** modification du `.env`, relancer `php artisan config:cache`.
+> Après **chaque** modification du `.env` : `optimize:clear` **puis** re-cacher.
+> Ne jamais cacher avec un `APP_KEY` vide — le cache reste corrompu et toutes
+> les pages répondent 500 (`MissingAppKeyException`). Remède :
+> `rm -f bootstrap/cache/*.php` puis re-cacher.
 
 ---
 
@@ -170,15 +226,22 @@ Chaque exécution consomme de 1 à `GAMEHUB_SYNC_PAGES_MAX` requêtes.
 Il reste ~280 requêtes de marge pour les synchronisations manuelles du back-office.
 Un avertissement est journalisé quand `X-RateLimit-Remaining` passe sous 50.
 
-### Cron LWS
+### Déclencheur
 
-Dans cPanel → *Tâches Cron*, une seule entrée :
+Deux mécanismes, à choisir selon l'hébergement :
+
+| Situation | Méthode |
+| --- | --- |
+| Le serveur a un crontab | `schedule:run` chaque minute (voir plus bas) |
+| Pas de crontab (LWS partagé) | **Route HTTP `/sync/tournois`** (section 3.6) |
+
+**Avec crontab** — cPanel → *Tâches Cron*, une seule entrée :
 
 ```
 * * * * * /usr/local/bin/php /home/VOTRE_COMPTE/gaming-arene/artisan schedule:run >> /dev/null 2>&1
 ```
 
-Adapter le chemin de `php` (`which php` en SSH) et le chemin du projet.
+Adapter le chemin de `php` (`which php` en SSH) et celui du projet.
 
 ### Première synchronisation
 
@@ -644,58 +707,79 @@ neon skills status --global           # vérifier les skills
 
 ---
 
-## 15. Maintenance sans SSH (terminal limité ou cPanel seul)
+## 15. Dépannage d'urgence (sans SSH)
 
-Si le terminal du serveur est absent ou limité, une page de maintenance
-accessible par navigateur remplace les commandes Artisan.
+Quand le site renvoie 500 partout, la cause est presque toujours l'une de ces
+trois :
 
-### Mise en service
+### 15.1 Le cache de configuration est corrompu
 
-1. Générer une clé :
-
-```bash
-php -r "echo bin2hex(random_bytes(16)) . PHP_EOL;"
-```
-
-2. Renseigner `.env` sur le serveur :
-
-```dotenv
-ARENE_MAINTENANCE_KEY=la_cle_generee
-```
-
-3. Ouvrir :
-
-```
-https://votre-domaine.com/_maintenance.php?cle=la_cle_generee
-```
-
-### Ce qu'elle affiche
-
-- Connexion base (PostgreSQL ou SQLite selon `DB_CONNECTION`)
-- Présence des caches de configuration et de routes
-- Valeur effective de `ARENE_ADMIN_PATH` et lien direct vers la connexion
-- Liens de test `/admin/connexion` vs chemin secret
-
-### Ce qu'elle permet
-
-| Bouton | Effet |
-| --- | --- |
-| Vider les caches | `config:clear`, `route:clear`, `view:clear`, `cache:clear` |
-| Régénérer les caches | `config:cache`, `route:cache`, `view:cache` |
-| Synchroniser les tournois | `tournois:sync` |
-
-Chaque commande affiche son code de sortie et sa sortie complète.
-
-### ⚠️ Sécurité
-
-- Sans `ARENE_MAINTENANCE_KEY`, la page répond **403** (aucun accès ouvert).
-- La clé est comparée avec `hash_equals` (résistant au timing).
-- La page émet `noindex, nofollow`.
-
-**Supprimez `public/_maintenance.php` une fois le déploiement terminé :**
+Symptôme : `storage/logs/laravel.log` contient
+`MissingAppKeyException: No application encryption key has been specified`.
+Cela arrive quand `config:cache` a tourné avec un `APP_KEY` vide.
 
 ```bash
-rm public/_maintenance.php
+cd arene-page
+rm -f bootstrap/cache/*.php
+php artisan optimize:clear
+php artisan config:cache
 ```
+
+### 15.2 Le contrôleur frontal racine n'est pas à jour
+
+Symptôme : `/admin/connexion` ou un script `_*.php` renvoie la 404 **d'Apache**
+et non celle de Laravel ; les assets renvoient du HTML.
+
+```bash
+cd ~/htdocs/mon-domaine.com
+cp arene-page/deploy/racine/index.php index.php
+```
+
+Contrôle :
+
+```bash
+php -r 'echo strpos(file_get_contents("index.php"), "basename") !== false ? "a jour\n" : "ANCIENNE version\n";'
+```
+
+### 15.3 Une erreur SQL spécifique à PostgreSQL
+
+Symptôme : `SQLSTATE[42P10]: for SELECT DISTINCT, ORDER BY expressions must
+appear in select list`.
+
+PostgreSQL refuse un `ORDER BY` sur une colonne absente du `SELECT DISTINCT`
+(MySQL le tolère). Ne jamais chaîner `distinct()` et `scopeAffiche()`, qui
+ajoute un `orderBy('debut_at')`.
+
+### Lire le log si aucune page ne s'affiche
+
+```bash
+rm -f storage/logs/laravel.log
+# → recharger une page dans le navigateur
+php -r '$f="storage/logs/laravel.log"; echo file_exists($f) ? implode("", array_slice(file($f), 0, 30)) : "(aucun log : erreur PHP fatale avant Laravel)";'
+```
+
+Un log vide signifie que l'erreur survient **avant** Laravel : `index.php`
+cassé ou opcache périmé.
+
+### Vérification complète après déploiement
+
+```bash
+for u in / /tournois /articles /lft /lft/rejoindre /arene-bot /a-propos /sitemap.xml /robots.txt /build/manifest.json; do
+  printf '%-24s %s\n' "$u" "$(curl -s -o /dev/null -w '%{http_code}' https://votre-domaine.com$u)"
+done
+```
+
+Attendu : `200` partout sauf `403` sur `/sync/tournois` sans jeton.
 
 ---
+
+## 16. Sécurité — à faire avant la mise en ligne
+
+- Changer le mot de passe de l'admin créé par le seeder (`password`).
+- Renseigner `ARENE_ADMIN_PATH` avec un chemin non devinable
+  (sinon le back-office reste sur `/admin`), puis `config:clear` avant
+  de re-cacher les routes.
+- Générer `ARENE_SYNC_TOKEN` (32 hexadécimaux minimum).
+- Vérifier que `APP_DEBUG=false` et `APP_ENV=production`.
+- S'assurer que `.env` répond `403` depuis l'extérieur.
+- Ne jamais committer `.env`, `.env.production` ni `.env.backup`.

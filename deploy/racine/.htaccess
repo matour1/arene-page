@@ -9,9 +9,11 @@
 #
 # ⚠️ Meilleure solution si disponible : pointer le document root du domaine
 #    sur « arene-page/public ». Ce fichier et index.php deviennent inutiles.
+#
+# ⚠️ Après chaque `git pull` touchant deploy/racine/ :
+#      cp arene-page/deploy/racine/index.php  index.php
+#      cp arene-page/deploy/racine/.htaccess  .htaccess
 # =============================================================================
-
-Options -Indexes
 
 <IfModule mod_rewrite.c>
     RewriteEngine On

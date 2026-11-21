@@ -3,11 +3,8 @@
 # =============================================================================
 # Structure : <docroot>/.htaccess  +  <docroot>/arene-page/public/index.php
 #
-# Aucune variable d'environnement mod_rewrite (peu fiable en mutualisé).
-# Assets traités par préfixes explicites, pas par test -f générique.
-#
-# ⚠️ Alternative recommandée : document root du domaine sur
-#    « arene-page/public », puis supprimer ce fichier.
+# ⚠️ Alternative recommandée : pointer le document root du domaine sur
+#    « arene-page/public » puis supprimer ce fichier.
 # =============================================================================
 
 <IfModule mod_rewrite.c>
@@ -23,12 +20,16 @@
     RewriteRule ^arene-page/(composer\.(json|lock)|package(-lock)?\.json|artisan|phpunit\.xml|\.htaccess)$ - [F,L]
 
     # -----------------------------------------------------------------------
-    # 2. Assets : préfixes explicites vers arene-page/public/
+    # 2. Tout fichier réellement présent dans arene-page/public/ est servi
+    #    directement. Couvre : build/, img/, uploads/, favicon.ico, et tout
+    #    script de diagnostic (_diag.php, _diag500.php...).
     # -----------------------------------------------------------------------
-    RewriteRule ^build/(.*)$   arene-page/public/build/$1   [L]
-    RewriteRule ^img/(.*)$     arene-page/public/img/$1     [L]
-    RewriteRule ^uploads/(.*)$ arene-page/public/uploads/$1 [L]
-    RewriteRule ^favicon\.ico$ arene-page/public/favicon.ico [L]
+    RewriteCond %{DOCUMENT_ROOT}/arene-page/public%{REQUEST_URI} -f
+    RewriteRule ^(.*)$ arene-page/public/$1 [L]
+
+    # Répertoires publics (ex. /build/assets/)
+    RewriteCond %{DOCUMENT_ROOT}/arene-page/public%{REQUEST_URI} -d
+    RewriteRule ^(.*)$ arene-page/public/$1 [L]
 
     # -----------------------------------------------------------------------
     # 3. Tout le reste -> front controller Laravel

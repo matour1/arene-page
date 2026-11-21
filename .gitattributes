@@ -9,3 +9,6 @@
 /.github export-ignore
 CHANGELOG.md export-ignore
 .styleci.yml export-ignore
+
+# Scripts shell : conserver les fins de ligne LF (sinon bash echoue)
+*.sh text eol=lf
